@@ -1,5 +1,6 @@
 """
 AI Engine: Claude API integration for insights and natural language queries.
+NL queries map to predefined functions only — no exec() or dynamic code.
 """
 import json
 import os
@@ -7,7 +8,6 @@ import re
 
 import numpy as np
 import pandas as pd
-import streamlit as st
 
 try:
     import anthropic
@@ -25,51 +25,51 @@ def _get_client():
 
 def _build_data_summary(df_att: pd.DataFrame, df_work: pd.DataFrame) -> dict:
     """Build a compact summary dict to send to Claude."""
-    high = int((df_att["Avg_num"] >= 90).sum())
-    low = int((df_att["Avg_num"] < 70).sum())
+    high     = int((df_att["Avg_num"] >= 90).sum())
+    low      = int((df_att["Avg_num"] < 70).sum())
     critical = int((df_att["Avg_num"] < 50).sum())
-    avg = float(df_att["Avg_num"].mean())
-    total = len(df_att)
+    avg      = float(df_att["Avg_num"].mean()) if not df_att.empty else 0.0
+    total    = len(df_att)
+
+    late_flag = int((df_att["# late"] > 5).sum()) if "# late" in df_att.columns else 0
 
     work_summary = {}
-    if "% good_num" in df_work.columns and "% missing_num" in df_work.columns:
-        work_summary["avg_good"] = round(float(df_work["% good_num"].mean()), 1)
-        work_summary["avg_missing"] = round(float(df_work["% missing_num"].mean()), 1)
+    if len(df_work) > 0 and "% good_num" in df_work.columns and "% missing_num" in df_work.columns:
+        good_mean    = df_work["% good_num"].mean()
+        missing_mean = df_work["% missing_num"].mean()
+        if not (pd.isna(good_mean) or pd.isna(missing_mean)):
+            work_summary["avg_good"]    = round(float(good_mean), 1)
+            work_summary["avg_missing"] = round(float(missing_mean), 1)
+        portfolio_col = "Portfolio Project - Itch Link"
         work_summary["portfolio_done"] = int(
-            df_work["Portfolio Project - Itch Link"].notna().sum()
-            if "Portfolio Project - Itch Link" in df_work.columns else 0
+            df_work[portfolio_col].notna().sum() if portfolio_col in df_work.columns else 0
         )
 
     teams = []
     if "Project Team Name" in df_work.columns:
         teams = df_work["Project Team Name"].dropna().unique().tolist()
 
-    late_flag = int((df_att["# late"] > 5).sum())
-
     return {
-        "total_students": total,
-        "avg_attendance_pct": round(avg, 1),
+        "total_students":        total,
+        "avg_attendance_pct":    round(avg, 1),
         "high_performers_count": high,
-        "low_performers_count": low,
-        "critical_count": critical,
-        "late_arrival_concern": f"{late_flag} students have 5+ late arrivals",
-        "work": work_summary,
-        "teams": teams,
-        "program": "3D Game Design – Urban Arts",
-        "school_year": "2025/26",
+        "low_performers_count":  low,
+        "critical_count":        critical,
+        "late_arrival_concern":  f"{late_flag} students have 5+ late arrivals",
+        "work":                  work_summary,
+        "teams":                 teams,
+        "program":               "3D Game Design – Urban Arts",
+        "school_year":           "2025/26",
     }
 
 
-@st.cache_data(ttl=14400, show_spinner=False)
-def generate_insights(
-    _df_att: pd.DataFrame, _df_work: pd.DataFrame
-) -> list[str]:
+def generate_insights(df_att: pd.DataFrame, df_work: pd.DataFrame) -> list[str]:
     """
     Call Claude to generate 4 data-driven insights.
     Falls back to rule-based insights if API key not available.
     """
-    client = _get_client()
-    summary = _build_data_summary(_df_att, _df_work)
+    client  = _get_client()
+    summary = _build_data_summary(df_att, df_work)
 
     if client is None:
         return _fallback_insights(summary)
@@ -95,8 +95,7 @@ Example format:
             max_tokens=600,
             messages=[{"role": "user", "content": prompt}],
         )
-        raw = response.content[0].text.strip()
-        # Extract JSON array from response
+        raw   = response.content[0].text.strip()
         match = re.search(r"\[.*\]", raw, re.DOTALL)
         if match:
             return json.loads(match.group())
@@ -106,183 +105,184 @@ Example format:
 
 
 def _fallback_insights(summary: dict) -> list[str]:
-    total = summary["total_students"]
-    high = summary["high_performers_count"]
-    low = summary["low_performers_count"]
-    avg = summary["avg_attendance_pct"]
+    total    = summary["total_students"]
+    high     = summary["high_performers_count"]
+    low      = summary["low_performers_count"]
+    avg      = summary["avg_attendance_pct"]
     critical = summary["critical_count"]
-    late = summary["late_arrival_concern"]
-    work = summary.get("work", {})
-    avg_good = work.get("avg_good", 0)
-    avg_missing = work.get("avg_missing", 0)
-    portfolio = work.get("portfolio_done", 0)
+    late     = summary["late_arrival_concern"]
+    work     = summary.get("work", {})
+    avg_good    = work.get("avg_good", 0) or 0
+    avg_missing = work.get("avg_missing", 0) or 0
 
+    base = round(high / total * 100) if total else 0
     return [
-        f"{high} of {total} students ({round(high/total*100)}%) have 90%+ attendance — strong engagement core.",
-        f"{low} students fall below 70% attendance — immediate outreach recommended before further drift.",
+        f"{high} of {total} students ({base}%) have 90%+ attendance — strong engagement core.",
+        f"{low} students fall below 70% attendance — immediate outreach recommended.",
         f"{late} — early lateness is a leading indicator of future absenteeism.",
-        f"Average work quality is {avg_good}% 'good'; {avg_missing}% of assignments missing — consider structured check-ins.",
+        f"Average work quality is {avg_good}% 'good'; {avg_missing}% of assignments missing.",
     ]
 
 
-@st.cache_data(ttl=7200, show_spinner=False)
+# ── NL Query — predefined functions only, no exec() ──────────────────────────
+
+QUERY_INTENTS = [
+    "perfect_attendance",
+    "at_risk_students",
+    "late_arrivals",
+    "missing_assignments",
+    "team_performance",
+    "attendance_rate",
+    "absent_students",
+]
+
+
 def process_nl_query(
     query: str,
-    _df_att: pd.DataFrame,
-    _df_work: pd.DataFrame,
+    df_att: pd.DataFrame,
+    df_work: pd.DataFrame,
 ) -> dict:
     """
-    Process a natural language query against the attendance/work data.
-    Returns: {pandas_code, explanation, viz_type, chart_config, error}
+    Map NL query to a predefined query function.
+    Uses LLM to classify intent, then executes the matched function.
+    No exec() or dynamic SQL.
     """
     client = _get_client()
+    if client:
+        intent = _classify_intent(client, query)
+    else:
+        intent = _rule_classify(query)
 
-    att_cols = list(_df_att.columns[:20])
-    work_cols = list(_df_work.columns[:15])
+    return _execute_predefined(intent, query, df_att, df_work)
 
-    schema = f"""
-DataFrames available:
-1. df_att — attendance (wide format)
-   Key columns: student_id, 'Preferred Name', 'Last Name', Avg_num (float attendance %),
-   '# here', '# late', '# excused', '# afk', '# absent'
-   Shape: {_df_att.shape}
 
-2. df_work — work tracking
-   Key columns: student_id, '% good_num', '% needs work_num', '% missing_num',
-   'Project Team Name', 'Project Team Role', 'Art v. Programming',
-   'Portfolio Project - Itch Link', 'Ready to Advance?'
-   Shape: {_df_work.shape}
-"""
-
-    if client is None:
-        return _rule_based_query(query, _df_att, _df_work)
-
-    prompt = f"""You are a data assistant for an education dashboard.
-Given a user's natural language question, return a JSON object with safe pandas code to answer it.
-
-Schema:
-{schema}
-
-User question: "{query}"
-
-Return ONLY a JSON object (no markdown):
-{{
-  "pandas_code": "# pandas code here using df_att and df_work; store result in variable named 'result'",
-  "viz_type": "table | bar | line | scatter | pie | metric",
-  "chart_config": {{"x": "col", "y": "col", "title": "..."}},
-  "explanation": "one-sentence answer",
-  "error": null
-}}
-
-Rules:
-- Use only pandas/numpy operations; no eval(), exec(), file I/O, or imports
-- 'result' must be a DataFrame or scalar
-- Handle missing data with .dropna() or .fillna(0)
-- If the question cannot be answered safely, set error to a short message"""
-
+def _classify_intent(client, query: str) -> str:
+    """Ask Claude to classify query into one of QUERY_INTENTS."""
+    prompt = (
+        f"Classify this education dashboard question into exactly one category.\n"
+        f"Question: \"{query}\"\n"
+        f"Categories: {', '.join(QUERY_INTENTS)}\n"
+        "Return only the category name, nothing else."
+    )
     try:
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=1000,
+            max_tokens=20,
             messages=[{"role": "user", "content": prompt}],
         )
-        raw = response.content[0].text.strip()
-        match = re.search(r"\{.*\}", raw, re.DOTALL)
-        if not match:
-            return {"error": "Could not parse AI response.", "explanation": ""}
-        parsed = json.loads(match.group())
-    except Exception as e:
-        return {"error": str(e), "explanation": ""}
-
-    # Execute in restricted namespace
-    safe_ns = {
-        "df_att": _df_att.copy(),
-        "df_work": _df_work.copy(),
-        "pd": pd,
-        "np": np,
-    }
-
-    code = parsed.get("pandas_code", "")
-    # Safety check: block dangerous patterns
-    if any(kw in code for kw in ["exec", "eval", "import", "open(", "__", "os.", "sys."]):
-        return {"error": "Query blocked for safety.", "explanation": ""}
-
-    try:
-        exec(code, safe_ns)  # noqa: S102
-        result = safe_ns.get("result", None)
-        parsed["result"] = result
-        parsed["error"] = None
-    except Exception as e:
-        parsed["error"] = f"Execution error: {e}"
-        parsed["result"] = None
-
-    return parsed
+        return response.content[0].text.strip().lower()
+    except Exception:
+        return _rule_classify(query)
 
 
-def _rule_based_query(query: str, df_att: pd.DataFrame, df_work: pd.DataFrame) -> dict:
-    """Fallback when no API key: handle common queries with pandas directly."""
-    q = query.lower().strip()
-
+def _rule_classify(query: str) -> str:
+    q = query.lower()
     if "perfect" in q or "100%" in q:
+        return "perfect_attendance"
+    if "risk" in q or "struggling" in q or "low attendance" in q:
+        return "at_risk_students"
+    if "late" in q:
+        return "late_arrivals"
+    if "missing" in q or "assignment" in q:
+        return "missing_assignments"
+    if "team" in q or "group" in q:
+        return "team_performance"
+    if "rate" in q or "average" in q or "overall" in q:
+        return "attendance_rate"
+    if "absent" in q:
+        return "absent_students"
+    return ""
+
+
+def _execute_predefined(intent: str, query: str, df_att: pd.DataFrame, df_work: pd.DataFrame) -> dict:
+    """Execute the predefined query function for the given intent."""
+
+    if intent == "perfect_attendance":
         result = df_att[df_att["Avg_num"] >= 100][
             ["Preferred Name", "Last Name", "Avg_num", "# here", "# absent"]
         ]
         return {
-            "result": result,
-            "viz_type": "table",
-            "explanation": f"Found {len(result)} students with 100% attendance.",
-            "error": None,
+            "result":      result,
+            "viz_type":    "table",
+            "explanation": f"{len(result)} students with 100% attendance.",
+            "error":       None,
         }
 
-    if "at risk" in q or "risk" in q or "struggling" in q or "low attendance" in q:
+    if intent in ("at_risk_students", "absent_students"):
         result = df_att[df_att["Avg_num"] < 70][
             ["Preferred Name", "Last Name", "Avg_num", "# absent"]
         ].sort_values("Avg_num")
         return {
-            "result": result,
-            "viz_type": "table",
+            "result":      result,
+            "viz_type":    "table",
             "explanation": f"{len(result)} students with attendance below 70%.",
-            "error": None,
+            "error":       None,
         }
 
-    if "team" in q or "group" in q:
-        if "Project Team Name" in df_work.columns and "% good_num" in df_work.columns:
+    if intent == "late_arrivals":
+        result = df_att[
+            ["Preferred Name", "Last Name", "# late", "# absent", "Avg_num"]
+        ].sort_values("# late", ascending=False)
+        return {
+            "result":      result.head(10),
+            "viz_type":    "table",
+            "explanation": "Students sorted by number of late arrivals.",
+            "error":       None,
+        }
+
+    if intent == "missing_assignments":
+        if "% missing_num" in df_work.columns and len(df_work) > 0:
+            result = df_work[
+                ["Preferred Name", "Last Name", "% missing_num", "% good_num"]
+            ].sort_values("% missing_num", ascending=False)
+            return {
+                "result":      result,
+                "viz_type":    "table",
+                "explanation": "Students sorted by missing assignment percentage.",
+                "error":       None,
+            }
+        return {
+            "result":      None,
+            "viz_type":    "table",
+            "explanation": "Work tracking data not yet available.",
+            "error":       None,
+        }
+
+    if intent == "team_performance":
+        if "Project Team Name" in df_work.columns and "% good_num" in df_work.columns and len(df_work) > 0:
             result = df_work.groupby("Project Team Name")["% good_num"].mean().reset_index()
             result.columns = ["Team", "Avg Work Quality %"]
             return {
-                "result": result,
-                "viz_type": "bar",
+                "result":       result,
+                "viz_type":     "bar",
                 "chart_config": {"x": "Team", "y": "Avg Work Quality %", "title": "Team Work Quality"},
-                "explanation": "Average work quality per project team.",
-                "error": None,
+                "explanation":  "Average work quality per project team.",
+                "error":        None,
             }
-
-    if "late" in q:
-        result = df_att[["Preferred Name", "Last Name", "# late", "# absent", "Avg_num"]].sort_values(
-            "# late", ascending=False
-        )
         return {
-            "result": result.head(10),
-            "viz_type": "table",
-            "explanation": "Students sorted by number of late arrivals.",
-            "error": None,
+            "result":      None,
+            "viz_type":    "table",
+            "explanation": "Team data not yet available.",
+            "error":       None,
         }
 
-    if "missing" in q or "assignment" in q:
-        if "% missing_num" in df_work.columns:
-            result = df_work[["Preferred Name", "Last Name", "% missing_num", "% good_num"]].sort_values(
-                "% missing_num", ascending=False
-            )
-            return {
-                "result": result,
-                "viz_type": "table",
-                "explanation": "Students sorted by missing assignment percentage.",
-                "error": None,
-            }
+    if intent == "attendance_rate":
+        avg = df_att["Avg_num"].mean() if not df_att.empty else 0
+        result = pd.DataFrame([{"Metric": "Average Attendance Rate", "Value": f"{avg:.1f}%"}])
+        return {
+            "result":      result,
+            "viz_type":    "metric",
+            "explanation": f"Overall program attendance rate: {avg:.1f}%.",
+            "error":       None,
+        }
 
+    # Unknown intent
     return {
-        "result": None,
-        "viz_type": "table",
-        "explanation": "Query not recognized without AI. Try: 'perfect attendance', 'at risk students', 'late arrivals', 'missing assignments', or 'team performance'.",
+        "result":      None,
+        "viz_type":    "table",
+        "explanation": (
+            "Try asking: 'perfect attendance', 'at risk students', "
+            "'late arrivals', 'missing assignments', 'team performance', or 'attendance rate'."
+        ),
         "error": None,
     }

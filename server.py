@@ -1,6 +1,7 @@
 """
 Program IQ — FastAPI backend
 Serves all analytics data + OpenAI chat.
+Data sourced from shared Neon DB (read-only).
 """
 import json
 import os
@@ -9,20 +10,25 @@ from typing import AsyncGenerator
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 load_dotenv()
 
-# ── Import the existing data modules ───────────────────────────────────────
-from modules.data_loader import load_attendance, load_work, load_yearly, load_demographics_summary
-from modules.data_transformer import (
-    build_long_attendance,
-    build_session_trend,
-    generate_demographics,
+import bcrypt as _bcrypt
+from datetime import datetime, timedelta, timezone
+
+import jwt as pyjwt
+
+from modules.db import (
+    get_attendance_df, get_session_trend_df, get_attendance_long_df, get_user_by_email,
+    get_programs, get_program_by_id, get_session_trend_for_program,
+    get_program_attendance_rates, get_at_risk_for_program,
 )
+from modules.data_loader import load_work, load_yearly, load_demographics_summary
+from modules.data_transformer import generate_demographics
 from modules.analytics import (
     overview_metrics,
     student_performance_table,
@@ -37,25 +43,107 @@ from modules.analytics import (
 
 app = FastAPI(title="Program IQ API", version="2.0")
 
+JWT_SECRET = os.environ.get("JWT_SECRET", "")
+if not JWT_SECRET:
+    raise RuntimeError(
+        "JWT_SECRET is required. Set it in your .env before starting Program IQ."
+    )
+
+# ── CORS ────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001",
+                   "http://127.0.0.1:3000", "http://127.0.0.1:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ── JWT middleware ──────────────────────────────────────────────────────────
+from starlette.middleware.base import BaseHTTPMiddleware
 
-# ── Preload all data at startup ─────────────────────────────────────────────
+
+class JWTMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Skip preflight and health check
+        if request.method == "OPTIONS" or request.url.path in ("/api/health", "/api/auth/login"):
+            return await call_next(request)
+
+        token = None
+        header = request.headers.get("Authorization", "")
+        if header.startswith("Bearer "):
+            token = header[7:]
+        if not token:
+            token = request.cookies.get("token")
+
+        if not token:
+            return JSONResponse({"error": "Authentication required"}, status_code=401)
+
+        try:
+            pyjwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        except (pyjwt.ExpiredSignatureError, pyjwt.InvalidTokenError):
+            return JSONResponse({"error": "Invalid or expired token"}, status_code=401)
+
+        return await call_next(request)
+
+
+app.add_middleware(JWTMiddleware)
+
+
+# ── Data store ──────────────────────────────────────────────────────────────
+_COLOR_MAP = {
+    "violet": "#7c3aed", "blue": "#3b82f6", "pink": "#ec4899",
+    "amber": "#f59e0b",  "green": "#10b981", "red": "#ef4444",
+    "cyan": "#06b6d4",   "orange": "#f97316", "yellow": "#eab308",
+}
+
+
+def _resolve_color(raw: str | None) -> str:
+    if not raw:
+        return "#64748b"
+    return _COLOR_MAP.get(raw.lower(), raw)
+
+
+def _format_program(p: dict) -> dict:
+    """Map DB program row to the shape the frontend expects."""
+    return {
+        "id":          p["id"],
+        "name":        p["name"],
+        "subtitle":    p.get("level") or "",
+        "type":        "After-school",
+        "icon":        p.get("emoji") or "📚",
+        "color":       _resolve_color(p.get("color")),
+        "description": (
+            f"{p['name']} · {p['site']} — {p['teacher']}"
+            if p.get("site") and p.get("teacher")
+            else p["name"]
+        ),
+        "site":        p.get("site"),
+        "teacher":     p.get("teacher"),
+        "schedule":    p.get("schedule"),
+        # Live stats from DB
+        "enrolled":        int(p.get("enrolled") or 0),
+        "session_count":   int(p.get("session_count") or 0),
+        "attendance_rate": float(p["attendance_rate"]) if p.get("attendance_rate") is not None else None,
+        "live": int(p.get("session_count") or 0) > 0,
+        # Historical fields — not in DB; kept for frontend compatibility
+        "enrolled_2324":   None,
+        "completed_2324":  None,
+        "retention_2324":  None,
+        "enrolled_2425":   int(p.get("enrolled") or 0),
+    }
+
+
 class DataStore:
-    att: pd.DataFrame = None
-    work: pd.DataFrame = None
-    long_att: pd.DataFrame = None
-    session: pd.DataFrame = None
-    enroll: pd.DataFrame = None
-    retain: pd.DataFrame = None
+    att:          pd.DataFrame = None
+    work:         pd.DataFrame = None
+    long_att:     pd.DataFrame = None
+    session:      pd.DataFrame = None
+    enroll:       pd.DataFrame = None
+    retain:       pd.DataFrame = None
     demographics: pd.DataFrame = None
-    perf: pd.DataFrame = None
+    perf:         pd.DataFrame = None
+    programs:     list         = []
 
 
 DS = DataStore()
@@ -63,32 +151,80 @@ DS = DataStore()
 
 @app.on_event("startup")
 async def startup():
-    # Bypass st.cache_data (not running in Streamlit runtime)
-    DS.att = load_attendance.__wrapped__()
-    DS.work = load_work.__wrapped__()
-    DS.enroll, DS.retain = load_yearly.__wrapped__()
-    DS.long_att = build_long_attendance.__wrapped__(DS.att)
-    DS.session = build_session_trend.__wrapped__(DS.att)
-    DS.demographics = generate_demographics.__wrapped__(
-        list(DS.att["student_id"].unique())
-    )
-    DS.perf = student_performance_table(DS.att, DS.work)
-    print(f"✅ Data loaded: {len(DS.att)} students, {len(DS.session)} sessions")
+    try:
+        DS.att      = get_attendance_df()
+        DS.work     = load_work()
+        DS.enroll, DS.retain = load_yearly()
+        DS.long_att = get_attendance_long_df()
+        DS.session  = get_session_trend_df()
+        DS.demographics = generate_demographics(list(DS.att["student_id"].unique()))
+        DS.perf     = student_performance_table(DS.att, DS.work)
+        DS.programs = [_format_program(p) for p in get_programs()]
+        print(f"✅ Data loaded: {len(DS.att)} students, {len(DS.session)} sessions, {len(DS.programs)} programs")
+    except Exception as e:
+        print(f"⚠️  DB unavailable at startup: {e}")
+        print("    DataStore is empty — endpoints will return empty/zero data until DB is reachable.")
+        # Leave all DS fields as None / [] — endpoints already guard against None DataFrames
 
 
 def _df_to_records(df: pd.DataFrame) -> list:
-    """Convert DataFrame to JSON-safe list of dicts."""
     return json.loads(
-        df.replace([np.nan, np.inf, -np.inf], None).to_json(orient="records", date_format="iso")
+        df.replace([np.nan, np.inf, -np.inf], None)
+          .to_json(orient="records", date_format="iso")
     )
 
 
 # ── Endpoints ───────────────────────────────────────────────────────────────
 
+class LoginBody(BaseModel):
+    email: str
+    password: str
+
+
+@app.post("/api/auth/login")
+async def login(body: LoginBody):
+    """
+    Independent login endpoint. Reads users table via read-only DB.
+    Issues JWT with same secret + payload format as Smart Attendance.
+    No cross-service HTTP calls needed.
+    """
+    user = get_user_by_email(body.email.strip().lower())
+    if not user or not _bcrypt.checkpw(
+        body.password.encode(), user["password_hash"].encode()
+    ):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    payload = {
+        "user_id": str(user["id"]),
+        "email":   user["email"],
+        "role":    user["role"],
+        "exp":     datetime.now(timezone.utc) + timedelta(hours=8),
+    }
+    token = pyjwt.encode(payload, JWT_SECRET, algorithm="HS256")
+
+    response = JSONResponse({
+        "ok": True,
+        "user": {
+            "id":    str(user["id"]),
+            "email": user["email"],
+            "role":  user["role"],
+            "name":  user.get("name"),
+        },
+    })
+    response.set_cookie(
+        "token",
+        token,
+        httponly=True,
+        samesite="lax",
+        max_age=8 * 3600,
+        path="/",
+    )
+    return response
+
+
 @app.get("/api/metrics")
 def get_metrics():
-    metrics = overview_metrics(DS.att, DS.session)
-    return metrics
+    return overview_metrics(DS.att, DS.session)
 
 
 @app.get("/api/session-trend")
@@ -112,9 +248,9 @@ def get_students(
 
     sort_map = {
         "attendance_desc": ("Attendance %", False),
-        "attendance_asc": ("Attendance %", True),
-        "absences_desc": ("Absent", False),
-        "missing_desc": ("% missing_num", False),
+        "attendance_asc":  ("Attendance %", True),
+        "absences_desc":   ("Absent", False),
+        "missing_desc":    ("% missing_num", False),
     }
     col, asc = sort_map.get(sort, ("Attendance %", False))
     if col in df.columns:
@@ -137,8 +273,7 @@ def get_at_risk():
 
 @app.get("/api/attendance-distribution")
 def get_att_distribution():
-    df = attendance_distribution(DS.att)
-    return _df_to_records(df)
+    return _df_to_records(attendance_distribution(DS.att))
 
 
 @app.get("/api/late-absent-correlation")
@@ -153,9 +288,7 @@ def get_late_absent():
 @app.get("/api/yearly-enrollment")
 def get_yearly():
     df = yearly_enrollment_trend(DS.enroll)
-    if df.empty:
-        return []
-    return _df_to_records(df)
+    return _df_to_records(df) if not df.empty else []
 
 
 @app.get("/api/roles")
@@ -188,7 +321,7 @@ def get_teams_list():
 # ── OpenAI Chat ─────────────────────────────────────────────────────────────
 
 class ChatMessage(BaseModel):
-    role: str  # "user" | "assistant"
+    role: str
     content: str
 
 
@@ -197,32 +330,48 @@ class ChatRequest(BaseModel):
 
 
 def _build_system_prompt() -> str:
-    """Build a rich system prompt with live data context."""
-    metrics = overview_metrics(DS.att, DS.session)
-    teams_df = team_performance(DS.perf)
+    metrics    = overview_metrics(DS.att, DS.session)
+    teams_df   = team_performance(DS.perf)
     at_risk_df = at_risk_students(DS.perf)
 
     team_summary = ""
     if not teams_df.empty:
         for _, row in teams_df.iterrows():
-            team_summary += f"  - {row['Project Team Name']}: {row['Students']} students, {row['Avg_Attendance']:.1f}% attendance, {row['Avg_Good']:.1f}% work quality\n"
+            team_summary += (
+                f"  - {row['Project Team Name']}: {row['Students']} students, "
+                f"{row['Avg_Attendance']:.1f}% attendance, {row['Avg_Good']:.1f}% work quality\n"
+            )
 
     at_risk_names = ""
     if not at_risk_df.empty:
         for _, row in at_risk_df.head(8).iterrows():
-            at_risk_names += f"  - {row['First Name']} {row['Last Name']}: {row['Attendance %']:.1f}% attendance, Priority={row['Priority']}\n"
+            at_risk_names += (
+                f"  - {row['First Name']} {row['Last Name']}: "
+                f"{row['Attendance %']:.1f}% attendance, Priority={row['Priority']}\n"
+            )
 
-    return f"""You are an expert education data analyst assistant for Urban Arts, a NYC youth game design program.
-You have access to real program data for the 2025/26 school year.
+    programs_summary = ""
+    for p in DS.programs:
+        rate = f"{p['attendance_rate']:.1f}%" if p["attendance_rate"] is not None else "no sessions yet"
+        programs_summary += (
+            f"  - {p['icon']} {p['name']} ({p['site']}): "
+            f"{p['enrolled']} students enrolled, {p['session_count']} sessions, "
+            f"attendance {rate}\n"
+        )
 
-LIVE DATA SUMMARY:
-- Program: 3D Game Design, Urban Arts NYC
-- Total students: {metrics['total_students']}
-- Average attendance: {metrics['avg_attendance']:.1f}%
-- Sessions recorded: {metrics['sessions']}
+    return f"""You are an expert education data analyst assistant for Urban Arts, a NYC youth arts program.
+You have access to real program data from the live database.
+
+LIVE DATA SUMMARY (all programs):
+- Total students tracked: {metrics['total_students']}
+- Average attendance across all sessions: {metrics['avg_attendance']:.1f}%
+- Total sessions recorded: {metrics['sessions']}
 - High performers (≥90% attendance): {metrics['high_performers']}
 - Students needing attention (<70%): {metrics['low_performers']}
 - Critical (<50% attendance): {metrics['critical_students']}
+
+ACTIVE PROGRAMS:
+{programs_summary or '  (no programs found)'}
 
 PROJECT TEAMS:
 {team_summary or '  (no team data)'}
@@ -238,13 +387,6 @@ STUDENT DEMOGRAPHICS (SY2023-24 actuals / 2024-25 projected):
 - Locations: 38% Brooklyn, 24% Bronx, 20% Queens, 14% Manhattan
 - Grades: 35% 9th, 30% 10th, 22% 11th, 13% 12th
 
-PROGRAM HISTORY (2024/25):
-- 668 total students across all programs
-- 3D Game Dev grew 55% year-over-year
-- Summer Core: 93% retention rate (best program)
-- Studio: 97% retention
-- After-school Core: 69% retention (needs focus)
-
 Your role:
 - Answer questions about attendance patterns, student performance, and program trends
 - Provide actionable insights for program staff (not just statistics)
@@ -255,7 +397,6 @@ Your role:
 Keep responses focused and under 250 words unless asked for detail."""
 
 
-# ── Tool definition for chart rendering ────────────────────────────────────
 CHART_TOOL = {
     "type": "function",
     "function": {
@@ -263,8 +404,7 @@ CHART_TOOL = {
         "description": (
             "Display a visual chart or graph directly in the chat. "
             "Use this whenever the user asks for a graph, chart, or visualization, "
-            "or when displaying data visually would be clearer than listing numbers. "
-            "Always prefer a chart over a text list when showing distributions or comparisons."
+            "or when displaying data visually would be clearer than listing numbers."
         ),
         "parameters": {
             "type": "object",
@@ -272,9 +412,8 @@ CHART_TOOL = {
                 "chart_type": {
                     "type": "string",
                     "enum": ["pie", "donut", "bar", "horizontal_bar", "line"],
-                    "description": "Chart type. Use pie/donut for distributions, bar for comparisons, line for trends.",
                 },
-                "title": {"type": "string", "description": "Descriptive chart title"},
+                "title": {"type": "string"},
                 "data": {
                     "type": "array",
                     "items": {
@@ -285,17 +424,9 @@ CHART_TOOL = {
                         },
                         "required": ["label", "value"],
                     },
-                    "description": "Array of {label, value} data points",
                 },
-                "unit": {
-                    "type": "string",
-                    "description": "Unit for values, e.g. '%', 'students', 'sessions'",
-                    "default": "%",
-                },
-                "insight": {
-                    "type": "string",
-                    "description": "One-sentence key takeaway to display below the chart",
-                },
+                "unit":    {"type": "string", "default": "%"},
+                "insight": {"type": "string"},
             },
             "required": ["chart_type", "title", "data"],
         },
@@ -332,26 +463,23 @@ async def chat(req: ChatRequest):
                 stream=True,
             )
 
-            # Accumulate tool call arguments across streaming chunks
             tool_calls_acc: dict[int, dict] = {}
             finish_reason = None
 
             async for chunk in stream:
-                choice = chunk.choices[0]
+                choice       = chunk.choices[0]
                 finish_reason = choice.finish_reason
 
-                # Stream plain text content immediately
                 if choice.delta.content:
                     yield f"data: {json.dumps({'content': choice.delta.content})}\n\n"
 
-                # Accumulate tool call argument fragments
                 if choice.delta.tool_calls:
                     for tc in choice.delta.tool_calls:
                         idx = tc.index
                         if idx not in tool_calls_acc:
                             tool_calls_acc[idx] = {
-                                "id": tc.id or "",
-                                "name": tc.function.name if tc.function else "",
+                                "id":        tc.id or "",
+                                "name":      tc.function.name if tc.function else "",
                                 "arguments": "",
                             }
                         if tc.id:
@@ -362,7 +490,6 @@ async def chat(req: ChatRequest):
                             if tc.function.arguments:
                                 tool_calls_acc[idx]["arguments"] += tc.function.arguments
 
-            # Process completed tool calls after stream ends
             if finish_reason == "tool_calls" and tool_calls_acc:
                 for tc in tool_calls_acc.values():
                     if tc["name"] == "show_chart":
@@ -370,7 +497,6 @@ async def chat(req: ChatRequest):
                             args = json.loads(tc["arguments"])
                             yield f"data: {json.dumps({'type': 'chart', 'chart': args})}\n\n"
 
-                            # Follow-up: let model add a text comment after the chart
                             followup_messages = messages + [
                                 {
                                     "role": "assistant",
@@ -412,260 +538,56 @@ async def chat(req: ChatRequest):
 
 @app.get("/api/demographics")
 def get_demographics():
-    return load_demographics_summary.__wrapped__()
+    demo = load_demographics_summary()
+    # Replace hardcoded attendance_rates with real DB data
+    try:
+        real_rates = get_program_attendance_rates()
+        if real_rates:
+            demo["attendance_rates"] = [
+                {"program": r["program"], "rate_2324": None, "rate_2425": float(r["rate"]) if r["rate"] is not None else None}
+                for r in real_rates
+            ]
+    except Exception:
+        pass  # keep hardcoded fallback if DB fails
+    return demo
 
 
-# ── Programs endpoints ───────────────────────────────────────────────────────
-
-PROGRAMS = [
-    {
-        "id": "summer_core",
-        "name": "Summer Core",
-        "subtitle": "2D Game Dev",
-        "type": "Summer",
-        "icon": "☀️",
-        "color": "#f59e0b",
-        "enrolled_2324": 96, "completed_2324": 89, "retention_2324": 93,
-        "enrolled_2425": 104, "completed_2425": None, "retention_2425": None,
-        "description": "Flagship summer program introducing game design fundamentals.",
-        "race": [
-            {"label": "Hispanic/Latinx", "value": 36},
-            {"label": "Asian", "value": 29},
-            {"label": "Black/African-Am.", "value": 25},
-            {"label": "White", "value": 9},
-            {"label": "Other", "value": 1},
-        ],
-        "gender": [
-            {"label": "Man/Boy", "value": 62},
-            {"label": "Woman/Girl", "value": 34},
-            {"label": "Non-Binary", "value": 4},
-        ],
-        "trend_baseline": 93,
-        "live": False,
-    },
-    {
-        "id": "afterschool_core",
-        "name": "After-school Core",
-        "subtitle": "2D Game Dev",
-        "type": "After-school",
-        "icon": "🏫",
-        "color": "#ef4444",
-        "enrolled_2324": 99, "completed_2324": 68, "retention_2324": 69,
-        "enrolled_2425": 105, "completed_2425": None, "retention_2425": None,
-        "description": "After-school game design track with highest enrollment.",
-        "race": [
-            {"label": "Hispanic/Latinx", "value": 38},
-            {"label": "Asian", "value": 27},
-            {"label": "Black/African-Am.", "value": 27},
-            {"label": "White", "value": 7},
-            {"label": "Other", "value": 1},
-        ],
-        "gender": [
-            {"label": "Man/Boy", "value": 65},
-            {"label": "Woman/Girl", "value": 31},
-            {"label": "Non-Binary", "value": 4},
-        ],
-        "trend_baseline": 69,
-        "live": False,
-    },
-    {
-        "id": "3d_game_dev",
-        "name": "3D Game Dev",
-        "subtitle": "Current Program",
-        "type": "After-school",
-        "icon": "🎮",
-        "color": "#ff6b35",
-        "enrolled_2324": 90, "completed_2324": 74, "retention_2324": 82,
-        "enrolled_2425": 140, "completed_2425": None, "retention_2425": None,
-        "description": "Advanced 3D game development — grew 55% year-over-year.",
-        "race": None,   # use live demographics
-        "gender": None,
-        "trend_baseline": None,  # use live session data
-        "live": True,
-    },
-    {
-        "id": "studio",
-        "name": "Studio",
-        "subtitle": "Advanced Track",
-        "type": "After-school",
-        "icon": "🎨",
-        "color": "#7c3aed",
-        "enrolled_2324": 29, "completed_2324": 28, "retention_2324": 97,
-        "enrolled_2425": 32, "completed_2425": None, "retention_2425": None,
-        "description": "Selective advanced studio for returning students.",
-        "race": [
-            {"label": "Hispanic/Latinx", "value": 34},
-            {"label": "Asian", "value": 31},
-            {"label": "Black/African-Am.", "value": 24},
-            {"label": "White", "value": 10},
-            {"label": "Other", "value": 1},
-        ],
-        "gender": [
-            {"label": "Man/Boy", "value": 58},
-            {"label": "Woman/Girl", "value": 37},
-            {"label": "Non-Binary", "value": 5},
-        ],
-        "trend_baseline": 97,
-        "live": False,
-    },
-    {
-        "id": "play_lab",
-        "name": "Play Lab",
-        "subtitle": "Exploratory Track",
-        "type": "After-school",
-        "icon": "🧪",
-        "color": "#10b981",
-        "enrolled_2324": 8, "completed_2324": 7, "retention_2324": 88,
-        "enrolled_2425": 10, "completed_2425": None, "retention_2425": None,
-        "description": "Small-cohort experimental game design exploration.",
-        "race": [
-            {"label": "Hispanic/Latinx", "value": 40},
-            {"label": "Asian", "value": 25},
-            {"label": "Black/African-Am.", "value": 25},
-            {"label": "White", "value": 10},
-        ],
-        "gender": [
-            {"label": "Man/Boy", "value": 60},
-            {"label": "Woman/Girl", "value": 40},
-        ],
-        "trend_baseline": 88,
-        "live": False,
-    },
-    {
-        "id": "senior_xp",
-        "name": "Senior XP",
-        "subtitle": "Alumni Track",
-        "type": "Summer",
-        "icon": "🏆",
-        "color": "#3b82f6",
-        "enrolled_2324": 22, "completed_2324": 18, "retention_2324": 82,
-        "enrolled_2425": 24, "completed_2425": None, "retention_2425": None,
-        "description": "Capstone experience for graduating senior students.",
-        "race": [
-            {"label": "Hispanic/Latinx", "value": 36},
-            {"label": "Asian", "value": 28},
-            {"label": "Black/African-Am.", "value": 27},
-            {"label": "White", "value": 9},
-        ],
-        "gender": [
-            {"label": "Man/Boy", "value": 55},
-            {"label": "Woman/Girl", "value": 41},
-            {"label": "Non-Binary", "value": 4},
-        ],
-        "trend_baseline": 82,
-        "live": False,
-    },
-    {
-        "id": "spring_break",
-        "name": "Spring Break Lab",
-        "subtitle": "Intensive",
-        "type": "Special",
-        "icon": "🌱",
-        "color": "#06b6d4",
-        "enrolled_2324": 51, "completed_2324": 37, "retention_2324": 73,
-        "enrolled_2425": 55, "completed_2425": None, "retention_2425": None,
-        "description": "Intensive one-week Spring Break game design sprint.",
-        "race": [
-            {"label": "Hispanic/Latinx", "value": 37},
-            {"label": "Asian", "value": 28},
-            {"label": "Black/African-Am.", "value": 26},
-            {"label": "White", "value": 9},
-        ],
-        "gender": [
-            {"label": "Man/Boy", "value": 63},
-            {"label": "Woman/Girl", "value": 33},
-            {"label": "Non-Binary", "value": 4},
-        ],
-        "trend_baseline": 73,
-        "live": False,
-    },
-]
-
-
-def _synthetic_trend(baseline: int, n_sessions: int = 18) -> list:
-    """Generate a plausible session attendance trend from a retention baseline."""
-    import random
-    rng = random.Random(baseline)
-    trend = []
-    # Start slightly below baseline, fluctuate ±8 pts
-    current = baseline - 5
-    for i in range(n_sessions):
-        delta = rng.randint(-6, 8)
-        current = max(50, min(100, current + delta))
-        trend.append({"session": i + 1, "rate": round(current, 1)})
-    return trend
-
+# ── Programs endpoints (DB-backed) ──────────────────────────────────────────
 
 @app.get("/api/programs")
-def get_programs():
-    """List all programs with summary stats."""
-    result = []
-    for p in PROGRAMS:
-        result.append({
-            "id": p["id"],
-            "name": p["name"],
-            "subtitle": p["subtitle"],
-            "type": p["type"],
-            "icon": p["icon"],
-            "color": p["color"],
-            "description": p["description"],
-            "enrolled_2324": p["enrolled_2324"],
-            "completed_2324": p["completed_2324"],
-            "retention_2324": p["retention_2324"],
-            "enrolled_2425": p["enrolled_2425"],
-            "live": p["live"],
-        })
-    return result
+def get_programs_endpoint():
+    if DS.programs:
+        return DS.programs
+    # Fallback: query DB directly if DataStore wasn't populated at startup
+    try:
+        return [_format_program(p) for p in get_programs()]
+    except Exception:
+        return []
 
 
 @app.get("/api/program/{program_id}")
 def get_program_detail(program_id: str):
-    """Return detailed drill-down data for a specific program."""
-    prog = next((p for p in PROGRAMS if p["id"] == program_id), None)
-    if not prog:
+    raw = get_program_by_id(program_id)
+    if not raw:
         raise HTTPException(status_code=404, detail="Program not found")
 
-    # Attendance trend
-    if prog["live"] and DS.session is not None:
-        df = DS.session.copy()
-        df["date"] = df["date"].dt.strftime("%Y-%m-%d")
-        trend = [
-            {"session": i + 1, "date": row.date, "rate": round(float(row.attendance_rate), 1)}
-            for i, row in enumerate(df.itertuples())
-        ]
-        # Live metrics
+    prog = _format_program(raw)
+    trend = get_session_trend_for_program(program_id)
+
+    live_metrics = None
+    if prog["live"]:
         live_metrics = {
-            "total_students": int(len(DS.att)),
-            "avg_attendance": float(DS.perf["Attendance %"].mean()) if DS.perf is not None else None,
-            "at_risk": int((DS.perf["Attendance %"] < 70).sum()) if DS.perf is not None else 0,
+            "total_students": int(raw.get("enrolled") or 0),
+            "avg_attendance": float(raw["attendance_rate"]) if raw.get("attendance_rate") is not None else None,
+            "at_risk": get_at_risk_for_program(program_id),
         }
-        # Live demographics from actual students
-        demo = load_demographics_summary.__wrapped__()
-        race = [{"label": r["category"], "value": r["pct_2425"]} for r in demo.get("race", []) if r.get("pct_2425", 0) > 0]
-        gender = [{"label": g["category"], "value": g["pct_2425"]} for g in demo.get("gender", []) if g.get("pct_2425", 0) > 0]
-    else:
-        trend = _synthetic_trend(prog["trend_baseline"])
-        live_metrics = None
-        race = prog["race"] or []
-        gender = prog["gender"] or []
 
     return {
-        "id": prog["id"],
-        "name": prog["name"],
-        "subtitle": prog["subtitle"],
-        "type": prog["type"],
-        "icon": prog["icon"],
-        "color": prog["color"],
-        "description": prog["description"],
-        "enrolled_2324": prog["enrolled_2324"],
-        "completed_2324": prog["completed_2324"],
-        "retention_2324": prog["retention_2324"],
-        "enrolled_2425": prog["enrolled_2425"],
-        "live": prog["live"],
+        **prog,
         "live_metrics": live_metrics,
         "trend": trend,
-        "race": race,
-        "gender": gender,
+        "race":   [],   # demographics not stored per-student in current schema
+        "gender": [],
     }
 
 
