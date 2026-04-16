@@ -14,11 +14,13 @@ export async function GET(req: NextRequest) {
     try {
       const realRates = await getProgramAttendanceRates();
       if (realRates.length > 0) {
-        demo.attendance_rates = realRates.map((r) => ({
-          program: r.program,
-          rate_2324: null,
-          rate_2425: r.rate,
-        }));
+        demo.attendance_rates = realRates
+          .filter((r) => r.rate !== null)
+          .map((r) => ({
+            program: r.program,
+            rate_2324: null,
+            rate_2425: r.rate as number,
+          }));
       }
     } catch {
       // keep hardcoded fallback if DB fails
