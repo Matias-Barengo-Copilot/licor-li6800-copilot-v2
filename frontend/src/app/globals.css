@@ -7,18 +7,22 @@
   --border: #252540;
   --text: #e2e8f0;
   --muted: #64748b;
-  --orange: #ff6b35;
+  --orange: #c6f000;
+  --orange-dark: #a8d600;
   --purple: #7c3aed;
   --green: #10b981;
   --yellow: #f59e0b;
   --red: #ef4444;
+  --brand-dark: #0b1b2b;
+  --brand-light: #f5f5f5;
+  --brand-border: #ededed;
 }
 
 * { box-sizing: border-box; }
 
 html, body {
-  background: var(--bg);
-  color: var(--text);
+  background: #f5f5f5;
+  color: #0b1b2b;
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
   margin: 0;
   padding: 0;
@@ -32,10 +36,25 @@ html, body {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.fade-up { animation: fadeUp 0.25s ease forwards; }
+.fade-up { animation: fadeUp 0.35s ease forwards; }
 
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.2; }
 }
 .blink { animation: blink 1s infinite; }
+
+/* Light-mode enforcement for legacy inline styles in dashboard */
+.ua-light [style*="background: #0a0a14"] { background: #f5f5f5 !important; }
+.ua-light [style*="background: #0d0d1a"] { background: #ffffff !important; }
+.ua-light [style*="background: #13131f"] { background: #ffffff !important; }
+.ua-light [style*="background: #1a1a2e"] { background: #f8fafc !important; }
+.ua-light [style*="border: 1px solid #252540"] { border: 1px solid #ededed !important; }
+.ua-light [style*="borderBottom: \"1px solid #252540\""] { border-bottom: 1px solid #ededed !important; }
+.ua-light [style*="borderTop: \"1px solid #252540\""] { border-top: 1px solid #ededed !important; }
+.ua-light [style*="color: #e2e8f0"] { color: #0b1b2b !important; }
+.ua-light [style*="color: #94a3b8"] { color: #334155 !important; }
+.ua-light [style*="color: #ff6b35"],
+.ua-light [style*="color: #7c3aed"] { color: #0b1b2b !important; }
+.ua-light [style*="background: #ff6b3518"],
+.ua-light [style*="background: #ff6b3520"] { background: #c6f00018 !important; }

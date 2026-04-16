@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8000";
+const BASE = "";
 
 export async function fetchMetrics() {
   const res = await fetch(`${BASE}/api/metrics`, { cache: "no-store" });

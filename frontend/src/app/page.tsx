@@ -24,6 +24,51 @@ import {
 
 const ChatPanel = dynamic(() => import("@/components/ChatPanel"), { ssr: false });
 
+function normalizeColor(value: string) {
+  return value.replace(/\s+/g, "").toLowerCase();
+}
+
+function enforceUrbanArtsLightTheme(root: HTMLElement) {
+  const map: Record<string, string> = {
+    "#0a0a14": "#f5f5f5",
+    "rgb(10,10,20)": "#f5f5f5",
+    "#0d0d1a": "#ffffff",
+    "rgb(13,13,26)": "#ffffff",
+    "#13131f": "#ffffff",
+    "rgb(19,19,31)": "#ffffff",
+    "#1a1a2e": "#f8fafc",
+    "rgb(26,26,46)": "#f8fafc",
+    "#252540": "#ededed",
+    "rgb(37,37,64)": "#ededed",
+    "#e2e8f0": "#0b1b2b",
+    "rgb(226,232,240)": "#0b1b2b",
+    "#ff6b35": "#c6f000",
+    "rgb(255,107,53)": "#c6f000",
+    "#7c3aed": "#0b1b2b",
+    "rgb(124,58,237)": "#0b1b2b",
+    "#10b981": "#c6f000",
+    "rgb(16,185,129)": "#c6f000",
+  };
+
+  const all = [root, ...Array.from(root.querySelectorAll<HTMLElement>("*"))];
+  for (const el of all) {
+    const bg = normalizeColor(el.style.backgroundColor || el.style.background || "");
+    const color = normalizeColor(el.style.color || "");
+    const border = normalizeColor(el.style.borderColor || "");
+
+    if (bg && map[bg]) el.style.background = map[bg];
+    if (color && map[color]) el.style.color = map[color];
+    if (border && map[border]) el.style.borderColor = map[border];
+
+    if (el.style.boxShadow?.includes("124,58,237")) {
+      el.style.boxShadow = "0 8px 24px rgba(11,27,43,0.16)";
+    }
+    if (el.style.boxShadow?.includes("0,0,0")) {
+      el.style.boxShadow = "0 2px 12px rgba(11,27,43,0.1)";
+    }
+  }
+}
+
 // ── Nav ──────────────────────────────────────────────────────────────────
 const NAV = [
   { id: "overview",     label: "Overview",     icon: "◈" },
@@ -62,8 +107,8 @@ function AttBadge({ v }: { v: number }) {
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`rounded-2xl p-5 ${className}`}
-      style={{ background: "#13131f", border: "1px solid #252540" }}
+      className={`rounded-xl p-5 ${className}`}
+      style={{ background: "#13131f", border: "1px solid #252540", boxShadow: "0 2px 10px rgba(0,0,0,0.18)" }}
     >
       {children}
     </div>
@@ -72,7 +117,7 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#64748b" }}>
+    <h2 className="text-sm font-semibold uppercase tracking-[0.18em] mb-4" style={{ color: "#94a3b8" }}>
       {children}
     </h2>
   );
@@ -316,6 +361,13 @@ ${teams.length > 0 ? `
       .catch(() => {});
   }, [minAtt, maxAtt, teamFilter, sortBy]);
 
+  useEffect(() => {
+    const root = document.querySelector<HTMLElement>(".ua-light");
+    if (!root) return;
+    const t = window.setTimeout(() => enforceUrbanArtsLightTheme(root), 0);
+    return () => window.clearTimeout(t);
+  }, [page, chatOpen, loading, error, students.length, teams.length, atRisk.length]);
+
   // Filtered students by search
   const filteredStudents = students.filter((s) => {
     if (!search) return true;
@@ -325,10 +377,10 @@ ${teams.length > 0 ? `
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ background: "#0a0a14" }}>
+      <div className="ua-light flex items-center justify-center h-screen" style={{ background: "#0a0a14" }}>
         <div className="text-center">
           <div className="text-4xl mb-4">🎮</div>
-          <p className="text-lg font-semibold" style={{ color: "#ff6b35" }}>Loading Program IQ…</p>
+          <p className="text-lg font-semibold" style={{ color: "#c6f000" }}>Loading Program IQ…</p>
           <p className="text-sm mt-1" style={{ color: "#64748b" }}>Connecting to data backend</p>
         </div>
       </div>
@@ -337,7 +389,7 @@ ${teams.length > 0 ? `
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ background: "#0a0a14" }}>
+      <div className="ua-light flex items-center justify-center h-screen" style={{ background: "#0a0a14" }}>
         <div
           className="text-center max-w-md rounded-2xl p-8"
           style={{ background: "#13131f", border: "1px solid #ef444440" }}
@@ -351,7 +403,7 @@ ${teams.length > 0 ? `
           <button
             onClick={loadAll}
             className="px-6 py-2 rounded-xl font-semibold text-sm"
-            style={{ background: "#ff6b35", color: "white" }}
+            style={{ background: "#c6f000", color: "#0b1b2b" }}
           >
             Retry
           </button>
@@ -361,7 +413,7 @@ ${teams.length > 0 ? `
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#0a0a14" }}>
+    <div className="ua-light flex h-screen overflow-hidden" style={{ background: "#0a0a14" }}>
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
       <aside
@@ -373,7 +425,7 @@ ${teams.length > 0 ? `
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold"
-              style={{ background: "linear-gradient(135deg, #ff6b35, #7c3aed)", color: "white" }}
+              style={{ background: "#c6f000", color: "#0b1b2b" }}
             >
               IQ
             </div>
@@ -395,7 +447,7 @@ ${teams.length > 0 ? `
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                 style={
                   active
-                    ? { background: "#ff6b3520", color: "#ff6b35", borderLeft: "2px solid #ff6b35" }
+                    ? { background: "#c6f00020", color: "#c6f000", borderLeft: "2px solid #c6f000" }
                     : { color: "#64748b" }
                 }
               >
@@ -421,7 +473,7 @@ ${teams.length > 0 ? `
             <button
               onClick={exportPDF}
               className="w-full mb-4 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
-              style={{ background: "#ff6b3518", border: "1px solid #ff6b3540", color: "#ff6b35" }}
+              style={{ background: "#c6f00018", border: "1px solid #c6f00040", color: "#c6f000" }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -1004,7 +1056,7 @@ ${teams.length > 0 ? `
                     <button
                       onClick={startCompare}
                       className="px-4 py-2 rounded-xl text-sm font-semibold transition-colors hover:opacity-80"
-                      style={{ background: "#7c3aed20", border: "1px solid #7c3aed40", color: "#a78bfa" }}
+                      style={{ background: "#c6f00018", border: "1px solid #c6f00040", color: "#c6f000" }}
                     >
                       ⇄ Compare Programs
                     </button>
@@ -1026,7 +1078,7 @@ ${teams.length > 0 ? `
                 <div>
                   {comparePicking && (
                     <div className="rounded-xl px-5 py-3 mb-4 text-sm font-medium"
-                      style={{ background: "#7c3aed20", border: "1px solid #7c3aed40", color: "#a78bfa" }}>
+                      style={{ background: "#c6f00018", border: "1px solid #c6f00040", color: "#c6f000" }}>
                       Click a program to select it as Program <strong>{comparePicking}</strong>
                       {compareA && <span className="ml-3 text-xs" style={{ color: "#64748b" }}>Program A: {compareA.icon} {compareA.name}</span>}
                     </div>
@@ -1052,10 +1104,14 @@ ${teams.length > 0 ? `
                           {isA && <p className="text-xs mt-2 font-bold" style={{ color: "#ff6b35" }}>Program A</p>}
                           {isB && <p className="text-xs mt-2 font-bold" style={{ color: "#7c3aed" }}>Program B</p>}
                           <div className="mt-3 flex gap-3 text-xs">
-                            <span style={{ color: "#94a3b8" }}>{prog.enrolled_2324} enrolled</span>
-                            <span style={{ color: prog.retention_2324 >= 90 ? "#10b981" : prog.retention_2324 >= 75 ? "#f59e0b" : "#ef4444" }}>
-                              {prog.retention_2324}% ret.
-                            </span>
+                            <span style={{ color: "#94a3b8" }}>{prog.enrolled ?? "—"} enrolled</span>
+                            {prog.attendance_rate != null ? (
+                              <span style={{ color: prog.attendance_rate >= 90 ? "#10b981" : prog.attendance_rate >= 75 ? "#f59e0b" : "#ef4444" }}>
+                                {prog.attendance_rate}% att.
+                              </span>
+                            ) : (
+                              <span style={{ color: "#475569" }}>no sessions</span>
+                            )}
                           </div>
                         </button>
                       );
@@ -1080,9 +1136,15 @@ ${teams.length > 0 ? `
                         </div>
                         <div className="grid grid-cols-3 gap-3">
                           {[
-                            { label: "Enrolled", value: detail.enrolled_2324, color: accent },
-                            { label: "Completed", value: detail.completed_2324, color: "#94a3b8" },
-                            { label: "Retention", value: `${detail.retention_2324}%`, color: detail.retention_2324 >= 90 ? "#10b981" : detail.retention_2324 >= 75 ? "#f59e0b" : "#ef4444" },
+                            { label: "Enrolled", value: detail.enrolled ?? "—", color: accent },
+                            { label: "Sessions", value: detail.session_count ?? "—", color: "#94a3b8" },
+                            {
+                              label: "Attendance",
+                              value: detail.attendance_rate != null ? `${detail.attendance_rate}%` : "—",
+                              color: detail.attendance_rate != null
+                                ? (detail.attendance_rate >= 90 ? "#10b981" : detail.attendance_rate >= 75 ? "#f59e0b" : "#ef4444")
+                                : "#475569",
+                            },
                           ].map((m) => (
                             <div key={m.label} className="rounded-xl p-3 text-center" style={{ background: "#0a0a14" }}>
                               <p className="text-xl font-bold" style={{ color: m.color }}>{m.value}</p>
@@ -1110,30 +1172,33 @@ ${teams.length > 0 ? `
 
                   {/* Retention bar comparison */}
                   <Card>
-                    <SectionTitle>Retention Rate — Head to Head</SectionTitle>
+                    <SectionTitle>Attendance Rate — Head to Head</SectionTitle>
                     <div className="space-y-4">
                       {[
                         { prog: compareA, detail: compareDetailA, accent: "#ff6b35" },
                         { prog: compareB, detail: compareDetailB, accent: "#7c3aed" },
-                      ].map(({ prog, detail, accent }) => (
-                        <div key={prog.id}>
-                          <div className="flex items-center justify-between text-sm mb-2">
-                            <span style={{ color: "#e2e8f0" }}>{prog.icon} {prog.name}</span>
-                            <span className="font-bold" style={{ color: detail.retention_2324 >= 90 ? "#10b981" : detail.retention_2324 >= 75 ? "#f59e0b" : "#ef4444" }}>
-                              {detail.retention_2324}%
-                            </span>
+                      ].map(({ prog, detail, accent }) => {
+                        const rate = detail.attendance_rate ?? 0;
+                        return (
+                          <div key={prog.id}>
+                            <div className="flex items-center justify-between text-sm mb-2">
+                              <span style={{ color: "#e2e8f0" }}>{prog.icon} {prog.name}</span>
+                              <span className="font-bold" style={{ color: rate >= 90 ? "#10b981" : rate >= 75 ? "#f59e0b" : "#ef4444" }}>
+                                {detail.attendance_rate != null ? `${rate}%` : "—"}
+                              </span>
+                            </div>
+                            <div className="h-3 rounded-full overflow-hidden" style={{ background: "#1a1a2e" }}>
+                              <div
+                                className="h-full rounded-full transition-all"
+                                style={{ width: `${rate}%`, background: accent }}
+                              />
+                            </div>
+                            <p className="text-xs mt-1" style={{ color: "#475569" }}>
+                              {detail.enrolled ?? "—"} students enrolled · {detail.session_count ?? 0} sessions recorded
+                            </p>
                           </div>
-                          <div className="h-3 rounded-full overflow-hidden" style={{ background: "#1a1a2e" }}>
-                            <div
-                              className="h-full rounded-full transition-all"
-                              style={{ width: `${detail.retention_2324}%`, background: accent }}
-                            />
-                          </div>
-                          <p className="text-xs mt-1" style={{ color: "#475569" }}>
-                            {detail.completed_2324} of {detail.enrolled_2324} students completed
-                          </p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </Card>
 
@@ -1198,27 +1263,33 @@ ${teams.length > 0 ? `
                     </div>
                   ) : programDetail ? (
                     <>
-                      {/* KPIs */}
+                      {/* KPIs — all from live DB data */}
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <MetricCard label="Enrolled (SY23-24)"  value={programDetail.enrolled_2324}      accent="orange" icon="📋" />
-                        <MetricCard label="Completed"           value={programDetail.completed_2324}     accent="purple" icon="✅" />
-                        <MetricCard label="Retention Rate"      value={`${programDetail.retention_2324}%`} accent={programDetail.retention_2324 >= 90 ? "green" : programDetail.retention_2324 >= 75 ? "yellow" : "red"} icon="📈" />
-                        <MetricCard label="Enrolled (SY24-25)"  value={programDetail.enrolled_2425}      accent="green"  icon="🎓" sub={programDetail.live ? "Live data" : "Projected"} />
+                        <MetricCard label="Students Enrolled"   value={programDetail.enrolled ?? "—"}     accent="orange" icon="📋" sub="From DB" />
+                        <MetricCard label="Sessions Recorded"   value={programDetail.session_count ?? "—"} accent="purple" icon="📅" />
+                        <MetricCard label="Attendance Rate"
+                          value={programDetail.attendance_rate != null ? `${programDetail.attendance_rate}%` : "—"}
+                          accent={programDetail.attendance_rate != null
+                            ? (programDetail.attendance_rate >= 90 ? "green" : programDetail.attendance_rate >= 75 ? "yellow" : "red")
+                            : "orange"}
+                          icon="📈"
+                        />
+                        <MetricCard label="Site"               value={programDetail.site ?? "—"}          accent="green"  icon="📍" sub={programDetail.teacher ?? ""} />
                       </div>
 
-                      {/* Live metrics for 3D Game Dev */}
+                      {/* Live metrics banner */}
                       {programDetail.live_metrics && (
                         <div className="rounded-2xl px-5 py-4 flex items-center gap-6"
-                          style={{ background: "#ff6b3510", border: "1px solid #ff6b3530" }}>
-                          <span className="text-2xl">🎮</span>
+                          style={{ background: "#c6f00010", border: "1px solid #c6f00030" }}>
+                          <span className="text-2xl">{programDetail.icon}</span>
                           <div className="flex gap-8">
                             {[
-                              { label: "Live Students", value: programDetail.live_metrics.total_students },
-                              { label: "Avg Attendance", value: `${programDetail.live_metrics.avg_attendance?.toFixed(1)}%` },
-                              { label: "At-Risk", value: programDetail.live_metrics.at_risk, color: "#ef4444" },
+                              { label: "Enrolled", value: programDetail.live_metrics.total_students },
+                              { label: "Avg Attendance", value: programDetail.live_metrics.avg_attendance != null ? `${programDetail.live_metrics.avg_attendance.toFixed(1)}%` : "—" },
+                              { label: "At-Risk (<70%)", value: programDetail.live_metrics.at_risk, color: "#ef4444" },
                             ].map((m) => (
                               <div key={m.label}>
-                                <p className="text-xl font-bold" style={{ color: (m as any).color || "#ff6b35" }}>{m.value}</p>
+                                <p className="text-xl font-bold" style={{ color: (m as any).color || "#c6f000" }}>{m.value}</p>
                                 <p className="text-xs" style={{ color: "#64748b" }}>{m.label}</p>
                               </div>
                             ))}
@@ -1233,7 +1304,7 @@ ${teams.length > 0 ? `
                       {/* Attendance trend */}
                       <Card>
                         <SectionTitle>
-                          Attendance Trend — {programDetail.live ? "Current School Year (Live)" : "SY2023-24 Historical"}
+                          Attendance Trend — {programDetail.session_count > 0 ? "Live data from DB" : "No sessions recorded yet"}
                         </SectionTitle>
                         <div className="h-[200px] flex items-end gap-1.5 px-2">
                           {programDetail.trend.map((pt: any, i: number) => {
@@ -1380,8 +1451,9 @@ ${teams.length > 0 ? `
           onClick={() => setChatOpen(true)}
           className="fixed bottom-6 right-6 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-2xl transition-all hover:scale-105 hover:opacity-90 z-40"
           style={{
-            background: "linear-gradient(135deg, #ff6b35, #7c3aed)",
-            boxShadow: "0 8px 32px rgba(124,58,237,0.4)",
+            background: "#c6f000",
+            color: "#0b1b2b",
+            boxShadow: "0 8px 24px rgba(198,240,0,0.24)",
           }}
           title="AI Chat Assistant"
         >

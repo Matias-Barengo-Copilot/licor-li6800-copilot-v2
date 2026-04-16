@@ -9,10 +9,10 @@ interface MetricCardProps {
 }
 
 const accentMap = {
-  orange: "#ff6b35",
-  green: "#10b981",
+  orange: "#c6f000",
+  green: "#c6f000",
   red: "#ef4444",
-  purple: "#7c3aed",
+  purple: "#0b1b2b",
   yellow: "#f59e0b",
 };
 
@@ -20,25 +20,25 @@ export default function MetricCard({ label, value, sub, accent = "orange", icon 
   const color = accentMap[accent];
   return (
     <div
-      className="relative rounded-2xl p-5 overflow-hidden group transition-all duration-200 hover:-translate-y-0.5"
+      className="relative rounded-xl p-5 overflow-hidden group transition-all duration-300 hover:-translate-y-0.5"
       style={{
-        background: "linear-gradient(135deg, #13131f 0%, #1a1a2e 100%)",
-        border: "1px solid #252540",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
+        background: "#ffffff",
+        border: "1px solid #ededed",
+        boxShadow: "0 2px 10px rgba(11,27,43,0.08)",
       }}
     >
       {/* Accent glow */}
       <div
-        className="absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity"
+        className="absolute top-0 right-0 w-20 h-20 rounded-full blur-3xl opacity-10 group-hover:opacity-15 transition-opacity"
         style={{ background: color }}
       />
 
       <div className="flex items-start justify-between relative">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#475569" }}>
             {label}
           </p>
-          <p className="text-3xl font-bold tracking-tight" style={{ color: "#e2e8f0" }}>
+          <p className="text-3xl font-bold tracking-tight" style={{ color: "#0b1b2b" }}>
             {value}
           </p>
           {sub && (

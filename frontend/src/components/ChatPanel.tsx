@@ -100,8 +100,9 @@ export default function ChatPanel({ onClose }: { onClose: () => void }) {
           return updated;
         });
       }
-    } catch (e: any) {
-      setError(e.message || "Chat failed. Check your OPENAI_API_KEY.");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Chat failed. Check your OPENAI_API_KEY.";
+      setError(message);
       setMessages(prev => {
         const updated = [...prev];
         const last = { ...updated[updated.length - 1] };
@@ -119,27 +120,27 @@ export default function ChatPanel({ onClose }: { onClose: () => void }) {
     <div
       className="fixed bottom-6 right-6 w-[440px] flex flex-col rounded-2xl overflow-hidden z-50"
       style={{
-        background: "#13131f",
-        border: "1px solid #252540",
-        boxShadow: "0 24px 64px rgba(0,0,0,0.7)",
+        background: "#ffffff",
+        border: "1px solid #ededed",
+        boxShadow: "0 18px 48px rgba(11,27,43,0.2)",
         height: "620px",
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid #252540" }}>
+      <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid #ededed" }}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
-            style={{ background: "#7c3aed20", color: "#7c3aed" }}>
+            style={{ background: "#c6f00020", color: "#c6f000" }}>
             🤖
           </div>
           <div>
-            <p className="text-sm font-semibold" style={{ color: "#e2e8f0" }}>AI Assistant</p>
+            <p className="text-sm font-semibold" style={{ color: "#0b1b2b" }}>AI Assistant</p>
             <p className="text-xs" style={{ color: "#64748b" }}>Powered by GPT-4o · charts enabled</p>
           </div>
         </div>
         <button onClick={onClose}
           className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:opacity-70"
-          style={{ color: "#64748b", background: "#1a1a2e" }}>
+          style={{ color: "#64748b", background: "#f8fafc", border: "1px solid #ededed" }}>
           ✕
         </button>
       </div>
@@ -150,7 +151,7 @@ export default function ChatPanel({ onClose }: { onClose: () => void }) {
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} fade-up`}>
             {m.role === "assistant" && (
               <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm mr-2 flex-shrink-0 mt-0.5"
-                style={{ background: "#7c3aed20", color: "#7c3aed" }}>
+                style={{ background: "#0b1b2b14", color: "#0b1b2b" }}>
                 ✦
               </div>
             )}
@@ -160,10 +161,10 @@ export default function ChatPanel({ onClose }: { onClose: () => void }) {
               {m.parts.length === 0 && streaming && i === messages.length - 1 ? (
                 /* Streaming placeholder */
                 <div className="rounded-2xl px-4 py-3 text-sm"
-                  style={{ background: "#1a1a2e", border: "1px solid #252540" }}>
+                  style={{ background: "#f8fafc", border: "1px solid #ededed" }}>
                   <span className="flex gap-1">
                     {[0, 0.2, 0.4].map((d, j) => (
-                      <span key={j} className="blink" style={{ color: "#7c3aed", animationDelay: `${d}s` }}>●</span>
+                      <span key={j} className="blink" style={{ color: "#c6f000", animationDelay: `${d}s` }}>●</span>
                     ))}
                   </span>
                 </div>
@@ -174,8 +175,8 @@ export default function ChatPanel({ onClose }: { onClose: () => void }) {
                       <div key={pi}
                         className="rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap"
                         style={m.role === "user"
-                          ? { background: "#ff6b3520", color: "#e2e8f0", border: "1px solid #ff6b3540" }
-                          : { background: "#1a1a2e", color: "#cbd5e1", border: "1px solid #252540", marginBottom: 4 }
+                          ? { background: "#c6f00020", color: "#0b1b2b", border: "1px solid #c6f00050" }
+                          : { background: "#ffffff", color: "#0b1b2b", border: "1px solid #ededed", marginBottom: 4 }
                         }
                       >
                         {part.content}
@@ -200,7 +201,7 @@ export default function ChatPanel({ onClose }: { onClose: () => void }) {
               {SUGGESTIONS.map((s) => (
                 <button key={s} onClick={() => send(s)}
                   className="text-xs px-3 py-1.5 rounded-full transition-colors hover:opacity-80"
-                  style={{ background: "#1a1a2e", border: "1px solid #252540", color: "#94a3b8" }}>
+                  style={{ background: "#ffffff", border: "1px solid #ededed", color: "#0b1b2b" }}>
                   {s}
                 </button>
               ))}
@@ -219,7 +220,7 @@ export default function ChatPanel({ onClose }: { onClose: () => void }) {
       </div>
 
       {/* Input */}
-      <div className="p-4" style={{ borderTop: "1px solid #252540" }}>
+      <div className="p-4" style={{ borderTop: "1px solid #ededed" }}>
         <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="flex gap-2">
           <input
             ref={inputRef}
@@ -229,9 +230,9 @@ export default function ChatPanel({ onClose }: { onClose: () => void }) {
             disabled={streaming}
             className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none"
             style={{
-              background: "#1a1a2e",
-              border: "1px solid #252540",
-              color: "#e2e8f0",
+              background: "#ffffff",
+              border: "1px solid #ededed",
+              color: "#0b1b2b",
               opacity: streaming ? 0.6 : 1,
             }}
           />
@@ -239,7 +240,7 @@ export default function ChatPanel({ onClose }: { onClose: () => void }) {
             type="submit"
             disabled={!input.trim() || streaming}
             className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:opacity-80 disabled:opacity-30"
-            style={{ background: "#ff6b35", color: "white" }}
+            style={{ background: "#c6f000", color: "#0b1b2b" }}
           >
             {streaming ? (
               <span className="blink text-xs">●</span>
