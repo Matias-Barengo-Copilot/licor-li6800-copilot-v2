@@ -1,0 +1,45 @@
+Open-Source LED Lamp for the LI-6800 Photosynthesis System
+Authors: Stinziano J.R. et al. (seven researchers from various Mexican universities spanning agronomy, physics, and plant physiology)
+Journal: Applications in Plant Sciences, October 2024
+PMC: pmc.ncbi.nlm.nih.gov/articles/PMC11788902/
+
+ABSTRACT
+
+This research article describes development of a cost-effective, open-source LED lamp compatible with the LI-6800 Portable Photosynthesis System. It addresses the problem that commercial photosynthesis lamps are expensive and use monochromatic LEDs that do not match sunlight's spectral distribution.
+
+HARDWARE DESIGN
+
+LED Technology: Chip-on-board LED (COB-LED) emitting white light at 6500 K color temperature, similar to sunlight spectral distribution.
+
+Control System: Precision LED driver using XTR110 chip, temperature monitoring via NTC thermistor, and active cooling with CPU cooler assembly.
+
+Controller: Arduino-compatible Trinket M0 microcontroller manages fan speed using PID algorithm. Integrates with LI-6800 console through User I/O port for both manual and programmatic control via Python scripts.
+
+Housing: 3D-printable using SLA printing technology.
+
+PERFORMANCE SPECIFICATIONS
+
+- Maximum PPFD output: greater than 4,250 µmol m⁻² s⁻¹ (without diffuser)
+- Spectral distribution: 97.6% of emitted light within photosynthetically active range
+- Uniformity: Coefficient of variation less than 10% across at least 97% of measurement area
+- Calibration coefficient (r²): 0.999 for PPFD prediction
+
+VALIDATION
+
+Authors demonstrated functionality through A-PPFD curves on bean plants, successfully measuring maximum quantum efficiency and respiration rates. Results confirmed the lamp meets quality standards for photosynthesis research.
+
+AVAILABILITY
+
+All designs, software, and calibration procedures are openly released under:
+- CERN Open Hardware License v2
+- GNU Lesser General Public License v3.0
+
+Available at GitHub repository (see publication for link).
+
+PRACTICAL ADVANTAGES
+
+- Buildable with basic electronics equipment and a 3D printer
+- Calibration requires only standard plant science lab equipment
+- Provides reliable photosynthesis parameter measurements
+- Significantly more cost-effective than commercial alternatives
+- Controllable through LI-6800 console or Python scripts

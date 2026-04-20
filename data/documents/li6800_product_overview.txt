@@ -1,0 +1,64 @@
+LI-6800 Portable Photosynthesis System — Product Overview
+Source: licor.com/env/products/photosynthesis/LI-6800/
+
+The LI-6800 is the global standard for photosynthetic gas exchange and chlorophyll a fluorescence measurements.
+
+PRODUCT OVERVIEW
+
+The LI-6800 simultaneously measures photosynthetic gas exchange and chlorophyll a fluorescence across identical plant and aquatic sample areas. The system extends to measure gas exchange from soil, insects, and various other sample types for diverse experimental applications.
+
+ANSWER QUESTIONS WITH CONFIDENCE
+
+Focus on your data: Fluorometer, file, calibration, balanced flow, and utilities assist data collection.
+
+Design your experiments: Custom gas mixtures, auxiliary sensors, custom chambers, and extensive programming capabilities provide flexibility.
+
+Take it comfortably into the field: Ergonomic grips, carrying harness, tripods, and monopods facilitate fieldwork.
+
+PUBLISH YOUR RESEARCH STORY
+
+The LI-6800 features supporting publishable data quality:
+- Automated startup and system tests with real-time operating status
+- Long-lasting, hot-swappable batteries with charge status indicators
+- Responsive touch screen with powerful graphics processor
+- Charts displaying live and logged data with auto-scaling capabilities
+- Configurable data logging for comprehensive analysis
+- Plain text and Microsoft Excel files with embedded equations
+- Configuration management tools for storing and sharing protocols
+
+NOVEL ADVANCEMENTS
+
+Aquatic Photosynthesis: The 6800-18 Aquatic Chamber measures steady-state carbon assimilation and chlorophyll a fluorescence from algal suspensions, coral, macroalgae, seagrasses, and additional aquatic organisms.
+
+Dynamic Assimilation Technique: Based on reformulated traditional assimilation equations, this allows measurements when chamber conditions are not at steady state, enabling faster CO2 response curves and survey measurements.
+
+Multiphase Flash Fluorometer: Features uniform light output, configurable modulation rate, signal-to-noise optimization, and flash intensity up to 16,000 µmol, achieving maximum fluorescence yield with true OJIP point resolution.
+
+COLLABORATION
+
+The LI-6800 supports collaboration across undergraduate teaching colleges, research institutions, and non-profit organizations. Disciplines using the system include plant physiology, aquatic photosynthesis, climate science, soil science, and agronomy.
+
+EXTEND RESEARCH
+
+Users can measure soil flux to study soil-plant dynamics and scale up to field measurements using eddy covariance systems through LI-COR ecosystem monitoring solutions.
+
+BUILT ON EXPERIENCE
+
+The LI-6800 was developed by experienced photosynthesis researchers and engineers in collaboration with leading plant physiologists. It combines patented technologies with proven techniques. LI-COR photosynthesis instruments are the most cited in published literature, earning researcher trust for nearly four decades.
+
+TRAINING AND SUPPORT
+
+Resources include in-person and online training with scientists, videos, publications, comprehensive documentation, and technical support. Each LI-6800 includes two training certificates.
+
+CONNECTIVITY
+
+Users can connect the LI-6800 to computers, tablets, or phones via VNC viewer to plot sample responses in real time, modify settings, and view charts. Classroom projection capabilities enable sharing instrument screens with students.
+
+CONTACT
+
+LI-COR, Inc.
+4647 Superior Street, PO Box 4425
+Lincoln, NE 68504, United States
+Phone: 1-402-467-3576 / Toll-Free: 1-800-447-3576
+Sales: envsales@licor.com
+Support: envsupport@licor.com

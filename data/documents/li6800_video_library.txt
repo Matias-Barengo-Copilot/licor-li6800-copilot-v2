@@ -1,0 +1,65 @@
+LI-6800 Portable Photosynthesis System — Video Library
+Source: licor.com/support/LI-6800/videos.html
+
+The LI-COR Video Library for the LI-6800 is organized into eight main categories covering all aspects of system setup, measurement, and maintenance.
+
+GETTING STARTED
+- Unpacking the LI-6800: Walk through the instrument components and get everything out of the box correctly
+- Chemical Overview: Understanding the chemical consumables in the LI-6800
+- Sensor Installation: How to install sensors on the system
+- Software Introduction: Tour of the LI-6800 interface and Bluestem OS software
+- System Tests (Warmup Tests): How to run system tests after startup to verify everything is working correctly
+- Power Options: Battery and power management for the LI-6800
+- Remote Control Setup: Connecting to the LI-6800 via VNC for remote operation
+
+INSTALLING CHAMBERS
+- Installing the standard leaf chamber
+- Installing the 6800-01A Multiphase Flash Fluorometer
+- Installing the 6800-18 Aquatic Chamber
+- Installing the 6800-09 Soil CO2 Flux Chamber
+- Installing accessory chambers (Large Leaf, Clear-Top, Needle)
+
+CONFIGURATIONS
+- Setting up custom gas mixtures
+- Configuring auxiliary sensors
+- Network and connectivity setup
+- Mounting on tripods and monopods
+
+MEASUREMENT EXAMPLES
+- How to Take a Basic Survey Measurement: Step-by-step guide to taking your first photosynthesis measurement in the field
+- Using the Dynamic Assimilation Technique: Take faster CO2 response curves during non-steady-state conditions
+- Electron Transport Rate (ETR) measurements
+- Non-Photochemical Quenching (NPQ) measurements
+- A-Ci response curves
+- Light response curves
+
+DATA FILES
+- Viewing logged data on the instrument
+- Transferring data via USB
+- Working with data in Excel (embedded equations)
+- Using SoilFluxPro for soil flux data analysis
+
+MAINTENANCE
+- Maintenance Overview: Routine maintenance tasks to keep your LI-6800 performing at its best
+- Gasket replacement
+- Soda lime extension and replacement
+- Filter changes
+- Thermocouple replacement
+- Analyzer cleaning and optical bench maintenance
+
+AQUATIC CHAMBER (6800-18)
+- Setting up the Aquatic Chamber for algae measurements
+- Sample preparation and loading
+- Running light response curves with aquatic samples
+- Data analysis for aquatic photosynthesis
+
+SOIL CO2 FLUX CHAMBER (6800-09)
+- Installing soil collars for flux measurements
+- Configuring soil temperature sensors
+- Running automated soil flux measurements
+- Exporting data to SoilFluxPro
+
+TRAINING AND SUPPORT
+- Each LI-6800 purchase includes two training certificates for in-person or online training with LI-COR scientists
+- Additional video tutorials available on the LI-COR YouTube channel
+- Contact: envsupport@licor.com or 1-800-447-3576

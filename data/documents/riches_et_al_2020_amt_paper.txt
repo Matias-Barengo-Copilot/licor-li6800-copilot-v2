@@ -1,0 +1,113 @@
+Simultaneous leaf-level measurement of trace gas emissions and photosynthesis with a portable photosynthesis system
+Authors: MJ Riches, Daniel Lee, Delphine K. Farmer
+Journal: Atmospheric Measurement Techniques, Volume 13, Issue 8, Pages 4123–4139 (2020)
+DOI: 10.5194/amt-13-4123-2020
+Published: August 4, 2020
+
+ABSTRACT
+
+The research demonstrates how to couple portable photosynthesis systems (PPS) with trace gas detectors to measure leaf-level volatile organic compound (VOC) emissions while simultaneously quantifying plant physiology. The team characterized the LI-6800 portable photosynthesis system, documenting its capabilities and constraints for such measurements. They validated their approach by comparing CO2 assimilation calculated by the system internally with external CO2 analyzer measurements, finding agreement within 1%. The study showcases both offline measurements using adsorbent cartridges and online measurements employing chemical ionization mass spectrometry, successfully detecting compounds including monoterpenes and formic acid directly emitted by plants.
+
+1. INTRODUCTION
+
+Volatile organic compounds from plants significantly influence atmospheric chemistry and air quality. These biogenic emissions represent the dominant global VOC source, with terrestrial ecosystems releasing approximately 1150 teragrams of carbon annually compared to anthropogenic sources at 142 teragrams yearly. Isoprenoids dominate biogenic VOC emissions, with isoprene alone accounting for roughly half of all biogenic releases.
+
+The factors affecting these emissions include temperature, soil moisture, light intensity, atmospheric CO2 concentration, plant developmental stage, mechanical stress, and biotic stress. Temperature effects are relatively well-characterized, but uncertainties remain regarding CO2 concentration impacts. Different plant species and VOC types exhibit varying responses to identical environmental conditions.
+
+Emission models show substantial variation, particularly for monoterpenes. This inconsistency reflects limited simultaneous measurements of plant physiology and speciated VOC emissions. The research addresses this gap through systematic characterization of the LI-6800 PPS coupled with trace gas detection.
+
+2. INSTRUMENTATION DESCRIPTION
+
+The portable photosynthesis system comprises two main components: a console managing digital control and air composition, and a head containing the leaf chamber. The system regulates environmental conditions including temperature, humidity, light, and CO2 concentration. Two infrared gas analyzers measure CO2 and water concentrations before and after the leaf chamber, enabling calculation of photosynthetic parameters.
+
+The system includes sampling ports allowing diversion of airflow to external gas analyzers. The reference (REF) port samples untreated air before the leaf chamber, while the sample (SAM) port measures air exiting the leaf chamber after contact with leaf tissue.
+
+Flow Rate Relationships
+
+The relationship between flows is expressed as: FI = FR + FS + FE
+
+Where:
+- FI = inlet flow
+- FR = reference port flow
+- FS = sample port flow
+- FE = exhaust flow (including IRGA requirements)
+
+Inlet flow ranges from 1.18 to 2.96 liters per minute, with each infrared gas analyzer requiring minimum 0.17 L/min.
+
+Environmental Control Capabilities
+
+The system effectively regulates CO2 and light. Temperature and humidity control depend on balancing between ambient conditions and desired setpoints. At temperatures above 30°C with humidity above 50%, simultaneous control becomes challenging. Temperature adjustment requires approximately 10 minutes to warm an empty chamber from 18 to 33°C, with cooling requiring twice this duration.
+
+3. ONLINE MEASUREMENT METHODS: TOF-CIMS
+
+The time-of-flight chemical ionization mass spectrometer coupled with iodide reagent ions enables real-time detection of gas-phase formic acid. Due to the CIMS inlet flow requirement of 1.9 liters per minute exceeding system subsampling limits, researchers diluted subsampled air with ultrapure zero air using a mass flow controller.
+
+Emission rate calculation:
+CP = CC × (QC/QP)
+
+Where CP represents VOC mixing ratio from the PPS, CC is the CIMS-identified mixing ratio, QC is total CIMS flow, and QP is the PPS subsample flow.
+
+4. OFFLINE DETECTION: SORBENT TUBES
+
+Thermal desorption gas chromatography mass spectrometry pre-concentrates trace gases on adsorbent cartridges for subsequent analysis. The study employed Tenax TA cartridges for collecting seven monoterpene species. This approach enables detection of compounds across broader molecular weight ranges than online techniques alone.
+
+Offline emission calculation:
+EVOC = (mVOC × QL) / (V × S)
+
+Where mVOC is VOC mass determined by calibration, QL is leaf chamber flow, V is total sampled air volume, and S is leaf area.
+
+5. SYSTEM BACKGROUND CONTAMINATION ANALYSIS
+
+The LI-6800 produces substantial background volatile compound signals, primarily from siloxanes (41% higher in sample versus reference ports), isobornyl acrylate, and n-octyl acrylate. These compounds are incorporated into textiles, coatings, and adhesives used in device manufacturing. While structurally dissimilar to most biogenic VOCs, background interference poses challenges for untargeted analytical approaches.
+
+The study found integrated ion counts from background sources were 49% higher at the sample port compared to the reference port. Researchers recommend frequent SAM port background measurements and extracted ion chromatography techniques to minimize interference.
+
+6. VALIDATION: INTERNAL VERSUS EXTERNAL CO2 MEASUREMENTS
+
+Researchers compared CO2 assimilation determined internally by the LI-6800 with external measurements using an independent analyzer. Testing across CO2 concentrations from 0 to 1600 ppm showed strong correlation (r² > 0.9999). The external measurement was 5.5% higher than internal measurements, attributed to systematic calibration differences.
+
+For leaves in the chamber, CO2 assimilation measurements correlated well between methods (r² = 0.97) with only 1% difference.
+
+7. CASE STUDIES
+
+7.1 Formic Acid Emissions from Spearmint
+
+Using temperature response curves (21–35°C), researchers measured formic acid emissions from spearmint leaves coupled to the CIMS system. CO2 assimilation peaked at 26°C with 14.2 µmol m⁻² s⁻¹, while formic acid emissions continued increasing until 29°C, reaching 2.30 µg m⁻² min⁻¹. This demonstrates that VOC emission temperature optima may differ substantially from photosynthetic responses.
+
+7.2 Decanal Emissions from Basil
+
+Offline measurements using sorbent cartridges revealed bidirectional decanal exchange in basil leaves across temperature gradients (18–35°C). At lower temperatures, leaves exhibited net uptake (negative emissions), transitioning to emission at higher temperatures. This pattern suggests more complex biochemical pathways than simple storage pool volatilization.
+
+7.3 Monoterpene Emissions from Tree Species
+
+Field measurements of ginkgo, mulberry, and walnut leaves documented limonene and gamma-terpinene emissions. Limonene emissions exceeded gamma-terpinene by factors of 10–20 across species. Notably, alpha-terpinene contributed only 22% of measured emissions but dominated atmospheric reactivity (44% of OH formation and 98% of ozone formation), illustrating the importance of compound speciation for atmospheric modeling.
+
+8. DISCUSSION: KEY FINDINGS
+
+The research demonstrates that portable photosynthesis systems effectively couple to multiple trace gas detection methods. Advantages include:
+- Simultaneous measurement of plant physiology and VOC emissions
+- Portability enabling field deployments
+- Environmental parameter control (temperature, light, humidity, CO2)
+- Flexibility with both online and offline analytical approaches
+
+Limitations include:
+- Substantial background contamination from device materials
+- Temperature and humidity control constraints at extreme conditions
+- High inlet airflow requirements impact on leaf chamber conditions
+- Extended equilibration times (5–35 minutes) for leaves entering chambers
+
+PRACTICAL RECOMMENDATIONS
+
+1. Background Characterization: Measure system blanks frequently from both reference and sample ports to account for device-derived contamination.
+
+2. Flow Rate Management: Maintain subsampling flows below 0.2 L/min when simultaneously using both ports; higher flows require manual adjustment and impact leaf chamber conditions.
+
+3. Analysis Approach: Employ extracted ion chromatography for targeted compound analysis rather than bulk signal measurements to minimize background interference.
+
+4. Equilibration Periods: Allow minimum 5–15 minutes for photosynthesis and VOC emissions to stabilize after environmental perturbations.
+
+5. Charcoal Filtration: Consider activated charcoal inlet filtration in greenhouse settings to remove ambient biogenic background compounds.
+
+CONCLUSIONS
+
+The study validates that portable photosynthesis systems can be effectively coupled to both online and offline trace gas analysis for leaf-level investigations. The work provides comprehensive characterization of the LI-6800's capabilities and limitations, offering guidance for researchers implementing similar approaches. The demonstrated applications to understudied compounds — particularly organic acids and aldehydes — highlight potential for improved understanding of plant-atmosphere exchanges and their atmospheric impacts.

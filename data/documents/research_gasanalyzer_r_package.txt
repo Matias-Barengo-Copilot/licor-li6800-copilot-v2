@@ -1,0 +1,51 @@
+GasanalyzeR: An R Package for Photosynthesis Data Workflows
+Journal: AoB PLANTS, Volume 16, Issue 4 (July 2024)
+DOI: 10.1093/aobpla/plae035
+URL: academic.oup.com/aobpla/article/16/4/plae035/7696354
+
+ABSTRACT
+
+GasanalyzeR is an open-source R package designed to advance reproducible research in plant photosynthesis analysis. It addresses a critical gap in scientific workflows by providing methods to import data from different instruments and translating photosynthetic variables to standardized nomenclature.
+
+KEY FEATURES
+
+Data Import and Standardization
+Supports importing data from four major gas-exchange instruments:
+- LI-COR LI-6400/6400XT
+- LI-COR LI-6800
+- Walz GFS-3000
+- PP Systems CIRAS-4
+
+Converts all data to a consistent format with standardized variable naming.
+
+Reproducible Analysis
+Enables scripted approaches using documented code, resulting in a traceable protocol for every step of data analysis.
+
+Flexible Equation Sets
+Implements multiple equation sets including:
+- Default von Caemmerer and Farquhar (1981) equations
+- Instrument-specific adjustments
+- Alternative models accounting for cuticular conductance
+- Carbon isotope discrimination calculations
+
+Sensitivity Analysis
+Built-in permutate() function allows systematic variation of assumptions and measurements to assess how sensitive results are to different inputs.
+
+PRACTICAL APPLICATIONS WITH LI-6800
+
+The package enables:
+- Importing and filtering LI-6800 data files
+- Recalculating variables when oxygen concentrations differ from standard levels
+- Multi-file analysis with sensitivity analyses
+- Integrated measurements combining gas-exchange with isotopic data
+
+AVAILABILITY
+
+- Developed under GNU General Public License
+- Prioritizes accessibility and extensibility
+- Minimal external R package dependencies
+- Enforces unit consistency through the units package
+
+SIGNIFICANCE FOR LI-6800 USERS
+
+GasanalyzeR provides a standardized, reproducible workflow for processing LI-6800 measurement data, making it easier to compare results across studies and instruments, and to share analysis protocols with collaborators.

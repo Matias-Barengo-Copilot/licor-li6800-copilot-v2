@@ -1,0 +1,99 @@
+/* ── Scroll reveal ────────────────────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Chat panel slide-in ─────────────────────────────────────────────────── */
+#chat-panel {
+  transform: translateY(12px);
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+#chat-panel.open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Chat messages scrollbar ─────────────────────────────────────────────── */
+#chat-messages::-webkit-scrollbar { width: 4px; }
+#chat-messages::-webkit-scrollbar-track { background: transparent; }
+#chat-messages::-webkit-scrollbar-thumb { background: #1A3A5C; border-radius: 2px; }
+
+/* ── Auto-resize textarea ────────────────────────────────────────────────── */
+#chat-input { overflow-y: hidden; }
+
+/* ── Mic recording state ─────────────────────────────────────────────────── */
+#mic-btn.recording {
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgb(239, 68, 68);
+  color: rgb(239, 68, 68);
+  animation: pulse-mic 1s ease infinite;
+}
+@keyframes pulse-mic {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+
+/* ── Camera / screen-share buttons: active (streaming) state ────────────── */
+#camera-btn.active,
+#screenshare-btn.active {
+  border-color: #00A0A0;
+  color: #00A0A0;
+  background-color: rgba(0,160,160,0.12);
+  animation: pulse-video 2s ease infinite;
+}
+@keyframes pulse-video {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,160,160,0.3); }
+  50%       { box-shadow: 0 0 0 5px rgba(0,160,160,0); }
+}
+
+/* ── Typing indicator ────────────────────────────────────────────────────── */
+.typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00A0A0;
+  animation: typing-bounce 1.2s ease infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40%            { transform: translateY(-6px); }
+}
+
+/* ── Citation badges ─────────────────────────────────────────────────────── */
+.citation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: rgba(0,160,160,0.1);
+  border: 1px solid rgba(0,160,160,0.3);
+  color: #00C8C8;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.citation-badge:hover { background: rgba(0,160,160,0.2); }
+
+/* ── Plotly graph bubble ─────────────────────────────────────────────────── */
+.graph-bubble {
+  width: 100%;
+  height: 220px;
+}
+
+/* ── Camera modal backdrop ───────────────────────────────────────────────── */
+#camera-modal {
+  transition: opacity 0.15s ease;
+}

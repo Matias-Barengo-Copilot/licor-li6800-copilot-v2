@@ -1,0 +1,41 @@
+LI-6800 Portable Photosynthesis System — Support Hub
+Source: licor.com/env/support/LI-6800/home.html
+
+SUPPORT RESOURCES
+
+What's new in version 2.1
+Complementary Leaf Physiology Measurements: The LI-600 and LI-6800
+Operating Instructions
+Software Downloads
+Video Library
+All Documents
+Frequently Asked Questions
+Troubleshooting
+
+SOFTWARE VERSION 2.1 — KEY UPDATES
+
+The LI-6800 runs Bluestem OS firmware. Version 2.1 includes updates to measurement capabilities, stability improvements, and new features for gas exchange and fluorescence workflows. Firmware updaters are available for Windows (855 MB) and macOS (864 MB).
+
+FlashAnalysis software is available separately for viewing and evaluating flash fluorescence data from the LI-6800, LI-600, LI-8100 XT, and LI-6400XT.
+
+FACTORY SERVICE AND CALIBRATION
+
+Factory calibration is an integral step in the manufacture and repair of all LI-COR measuring instruments. LI-COR offers factory calibration services to maintain instrument accuracy and ensure data quality. Calibration certificates are provided with each instrument.
+
+TRAINING
+
+Instrument training is offered worldwide for users with varying experience levels. Training formats include:
+- In-person workshops at LI-COR facilities and partner institutions
+- Online training courses
+- Video tutorials in the Video Library
+- Each LI-6800 purchase includes two training certificates
+
+THE LI-600 AND LI-6800: COMPLEMENTARY INSTRUMENTS
+
+The LI-600 Porometer/Fluorometer complements the LI-6800 for leaf physiology measurements. While the LI-6800 performs comprehensive gas exchange analysis, the LI-600 provides rapid survey measurements of stomatal conductance and chlorophyll fluorescence. Together they enable efficient field campaigns combining detailed and high-throughput measurements.
+
+CONTACT SUPPORT
+
+Phone: 1-402-467-3576 (Toll Free: 1-800-447-3576)
+Email: envsupport@licor.com
+Address: 4647 Superior St., P.O. Box 4425, Lincoln, NE USA 68504-0425

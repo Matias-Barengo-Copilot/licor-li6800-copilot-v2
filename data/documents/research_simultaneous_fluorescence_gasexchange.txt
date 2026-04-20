@@ -1,0 +1,42 @@
+Modification of a Gas Exchange System to Measure Active and Passive Chlorophyll Fluorescence Simultaneously Under Field Conditions
+Journal: AoB PLANTS, Volume 13, Issue 1 (2021)
+PMC: pmc.ncbi.nlm.nih.gov/articles/PMC7821389/
+DOI: 10.1093/aobpla/plaa066
+
+ABSTRACT
+
+This paper describes a modification to the LI-COR LI-6800 gas exchange instrument enabling simultaneous measurement of active and passive chlorophyll fluorescence alongside photosynthetic gas exchange under field conditions.
+
+KEY INNOVATION
+
+Researchers drilled a 1.5-mm hole into the leaf chamber's bottom plate and inserted a fiber-optic connected to a visible-near-infrared (VIS-NIR) spectrometer. This allows measurement of passive steady-state fluorescence from the abaxial (lower) leaf surface while the instrument's built-in PAM fluorometer measures active fluorescence from the adaxial (upper) surface.
+
+METHODOLOGY
+
+- Species: Walnut (Juglans regia) saplings
+- Conditions: Well-watered and water-stressed
+- Light levels tested: 50, 500, and 1,500 µmol m⁻² s⁻¹ PAR
+- Validated against a similarly modified Walz GFS-3000 system
+
+MAIN FINDINGS
+
+- Positive linear correlations between fluorescence measurements from both instruments
+- Positive relationship between passive fluorescence (Ft,λ) and normalized active fluorescence (Ft/Fo)
+- Both systems detected expected fluorescence decreases under water stress
+- Measurements from modified LI-6800 showed positive linear correlation with the Walz GFS-3000, confirming reliability
+
+SIGNIFICANCE
+
+This portable, field-capable instrument bridges leaf-level measurements with satellite-based solar-induced fluorescence (SIF) observations, enabling validation of how remotely sensed fluorescence relates to photosynthetic activity across spatial scales.
+
+PRACTICAL ADVANTAGES
+
+- Portable and field-suitable (unlike previous lab-only setups)
+- Thermally stable spectrometer requiring only USB power
+- Measures identical leaf areas across three measurement types simultaneously
+- Enables validation of satellite-based solar-induced fluorescence data
+
+STUDY LIMITATIONS
+
+- Testing confined to one species (Juglans regia) in controlled lath house conditions
+- Future research should expand to multiple species and true field environments

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}LI-6800 — LI-COR{% endblock %}</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            licor: {
+              navy:    '#0B1E3D',
+              teal:    '#00A0A0',
+              teallt:  '#00C8C8',
+              silver:  '#A8B4C0',
+              dark:    '#071529',
+              card:    '#0F2847',
+              border:  '#1A3A5C',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Plotly.js -->
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+
+  <link rel="stylesheet" href="/static/css/main.css" />
+</head>
+<body class="h-full bg-licor-dark text-white font-sans antialiased">
+
+  {% block content %}{% endblock %}
+
+  <!-- Camera modal (shared, lives outside the chat panel) -->
+  <div id="camera-modal" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm hidden items-center justify-center">
+    <div class="relative bg-licor-card border border-licor-border rounded-2xl overflow-hidden w-[480px] max-w-[95vw]">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-licor-border">
+        <span class="text-sm font-semibold text-white">Camera</span>
+        <button id="camera-close-btn" class="text-licor-silver hover:text-white transition-colors p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="relative aspect-video bg-black">
+        <video id="camera-preview" class="w-full h-full object-cover" autoplay muted playsinline></video>
+      </div>
+      <div class="flex gap-3 px-5 py-4">
+        <button id="camera-capture-btn"
+                class="flex-1 py-2.5 rounded-lg bg-licor-teal text-white text-sm font-medium hover:bg-licor-teallt transition-colors">
+          Capture
+        </button>
+        <button id="camera-cancel-btn"
+                class="px-5 py-2.5 rounded-lg border border-licor-border text-licor-silver text-sm hover:border-licor-teal hover:text-licor-teal transition-colors">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/ui.js" defer></script>
+  <script src="/static/js/app.js" defer></script>
+</body>
+</html>

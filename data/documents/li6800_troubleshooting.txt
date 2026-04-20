@@ -1,0 +1,71 @@
+LI-6800 Portable Photosynthesis System — Troubleshooting Guide
+Source: licor.com/support/LI-6800/topics/troubleshooting-problems.html
+
+COMMON ISSUES AND SOLUTIONS
+
+File Transfer Issues
+USB devices must be formatted as FAT file system. Both head and console must be connected via cable when transferring files.
+
+Log Button Problems
+Ensure a log file is open before pressing the log button. Press and hold the button long enough to record data.
+
+CO2 Cartridge Issues
+Check holder tightness. Inspect threads for debris. Verify O-ring is present. Confirm you are using 7.5 or 8-gram cartridges. If cartridges are too small and tightening the holder firmly does not stop a leak, try dropping a small coin or washer into the holder.
+
+Environmental Control Overrides
+The system may override user settings during tests, Auto Control operations, or Programs. The system may also limit humidity to prevent condensation inside the instrument.
+
+Flow Setpoint Problems
+Verify the pump is activated under Environment > Flow settings. Confirm flow is passing through both gas analyzers.
+
+CO2 Maintenance
+Replace saturated soda lime. Flush desiccant and humidifier columns. Verify that the CO2 cartridge contains actual CO2 gas (not an empty cartridge).
+
+Fluorometer Issues
+Confirm the measuring beam is enabled. Verify logging options are configured correctly. Check clock synchronization. Battery replacement may be needed if the clock repeatedly desynchronizes.
+
+Chamber Warnings
+Address serial number mismatches and communication errors. Verify chamber information accuracy through firmware updater tools.
+
+Leak Detection
+Systematically check columns, filters, O-rings, gaskets, thermocouples, and tubing connections. Chamber leaks typically manifest as low Flow_s readings.
+
+Pump Calibration Tools
+The following Python programs are available for diagnosing and correcting pump and flow meter calibration issues:
+- PumpCalCheck.py
+- PumpCalEditor.py
+- CalibratePumpSettings.py
+
+Unreasonable Results
+Allow at least 2 minutes of equilibration after any input changes. Monitor reference CO2 stability. Check for excessive analyzer noise. Investigate potential leaf-to-gasket leaks if assimilation values look wrong.
+
+Hardware Issues
+Power button problems require contacting LI-COR support. No user-replaceable fuses are available in the instrument.
+
+STATUS AND WARNING MESSAGES
+Source: licor.com/support/LI-6800/topics/troubleshooting-messages.html
+
+The LI-6800 displays self-diagnostic messages in the upper left corner of the screen, color-coded by severity:
+- Red = problem requiring attention
+- Yellow = potential concern
+
+Status Messages:
+- Log Pending — displayed during logging events
+- Program States — running, paused, or active
+- Auto Controls — CO2, fan, flow, humidity, light, temperature, or matching engaged
+- System Tests — warmup or system testing in progress
+- Special Functions — AutoDry, PostFlash, or manual matching active
+
+Warning Messages include:
+- Equipment failures: fan, TEC cooler, fluorometer issues
+- Environmental concerns: extreme temperatures, high humidity exceeding 99%
+- Flow problems: obstruction ("Constricted flow?") or leaks ("Console flow leak?")
+- Calibration issues
+- Battery status warnings
+- Connectivity problems
+- Temperature sensor anomalies
+- CO2 cartridge status
+- Fluorometer malfunctions
+- Software version mismatches between head and console
+
+Contact for persistent issues: envsupport@licor.com or 1-800-447-3576

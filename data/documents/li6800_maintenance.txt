@@ -1,0 +1,78 @@
+LI-6800 Portable Photosynthesis System — Maintenance Guide
+Sources: licor.com/support/LI-6800/topics/maintenance-head.html, maintenance-fluorometer.html
+
+HEAD AND IRGA MAINTENANCE
+Source: licor.com/support/LI-6800/topics/maintenance-head.html
+
+Infrared gas analyzers require periodic maintenance to prevent calibration drift and ensure reliable performance. Maintenance frequency depends on use conditions and operator care.
+
+Replacing Head Filters
+The system contains two small air filters in the head between the leaf chamber and the gas analyzer that prevent debris from entering the analyzer. Filters may need periodic cleaning or replacement. Use spares kit (part number 300-14319).
+
+Replacing Chemical Bottles
+Two plastic bottles containing CO2 and water vapor scrubbers typically last two or more years.
+Procedure:
+1. Remove shell with three Phillips screws
+2. Carefully extract and replace bottles while wearing an anti-static wrist strap
+3. After replacing bottles, let the instrument sit for one day before checking the zeros — this allows proper scrubbing of contaminants from new chemical bottles
+
+Cleaning the Optical Bench
+Should only be performed if debris is visibly present in the gas analyzers.
+Process involves:
+1. Removing chamber, heat exchanger, and bulkhead cover to access mirrors and optical components
+2. Marking mirrors to track orientation before removal
+3. Inspecting sapphire windows for contamination
+4. Using a soft lint-free cloth on mirrors (not swabs)
+5. Replacing O-rings if cracked
+6. Tightening mirror screws to 45 inch-ounces in a spiral sequence
+
+After cleaning, perform sensor tests including leak checks and recalibrate zero and span settings.
+
+FLUOROMETER MAINTENANCE
+Source: licor.com/support/LI-6800/topics/maintenance-fluorometer.html
+
+The 6800-01A fluorometer requires minimal routine upkeep. The primary maintenance task is periodically replacing the coin cell battery.
+
+Battery Specifications
+Uses CR1225 clock battery (3 V, 48 mAh). Replace when voltage drops below approximately 2.8V.
+
+Pre-Replacement Safety Steps:
+- Power down the instrument completely
+- Disconnect fluorometer from sensor head and console
+- Use anti-static wrist strap to prevent electrostatic discharge
+- Handle carefully to avoid damaging connectors or circuit boards
+
+Access Procedure:
+1. Remove four screws securing the top cover (two visible, two hidden by the clamping arm)
+2. When lifting the cover, be cautious not to strain the power cable — the rubber grommet should remain attached to the fluorometer body
+
+Battery Testing:
+- Connect voltmeter's negative lead to ground pin
+- Touch positive lead to battery's positive terminal
+- Readings between approximately 2.8 and 3.0 volts indicate adequate function
+
+GENERAL MAINTENANCE CHECKLIST
+
+Videos covering routine maintenance are available in the LI-COR Video Library, including:
+- Gasket replacement
+- Soda lime extension
+- Filter changes
+- Thermocouple replacement
+- Analyzer cleaning
+
+MAINTENANCE SCHEDULE GUIDANCE
+
+Routine tasks (as needed based on use):
+- Replace head filters when visible contamination occurs
+- Replace soda lime when saturated (typically indicated by CO2 control issues)
+- Replace desiccant when water vapor control degrades
+- Replace fluorometer battery when clock desynchronizes or voltage drops below 2.8V
+
+Periodic tasks (every 1–2 years):
+- Replace chemical scrubber bottles
+- Full calibration check (zeros and spans)
+- Leak check on all connections
+
+Contact LI-COR support for any hardware issues beyond these user-serviceable maintenance tasks:
+Phone: 1-800-447-3576
+Email: envsupport@licor.com

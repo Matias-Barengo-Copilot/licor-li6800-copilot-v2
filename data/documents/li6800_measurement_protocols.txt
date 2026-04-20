@@ -1,0 +1,187 @@
+LI-6800 Portable Photosynthesis System — Measurement Protocols
+Sources: licor.com/support/LI-6800/topics/
+
+SYSTEM INTRODUCTION
+
+The LI-6800 is a portable photosynthesis system that measures plant physiological processes non-destructively. It measures uptake of carbon dioxide (CO2) and release of water vapor while simultaneously quantifying chlorophyll fluorescence.
+
+Key Capabilities:
+- Gas Exchange: Using IRGAs, calculates net CO2 assimilation and transpiration rates. For leaf samples, determines stomatal conductance and intercellular CO2 concentration.
+- Fluorescence Measurements: The fluorometer detects re-emission of photons by chlorophyll associated with photosystem II, providing data on quantum yield and electron transport rates.
+
+Technical Design: The LI-6800 uses an open gas exchange system where measurements of photosynthesis and transpiration are based on differences in CO2 and H2O in an air stream entering and exiting the leaf cuvette. A distinctive advantage is that gas analyzers are positioned in the head unit near the sample chamber rather than remotely, enabling rapid response to sample changes. The console provides automated control to adjust CO2 and water vapor concentrations in incoming air.
+
+MEASUREMENTS TAB
+Source: licor.com/support/LI-6800/topics/measurements-tab.html
+
+The Measurements tab displays graphs and values of parameters measured and computed by the LI-6800, and also initiates match operations.
+
+Graphs Section: Eight graph displays (A through H) are available. Users configure graphs to show either strip charts (variables plotted against time) or scatter plots (one variable against another).
+- Add a variable by tapping the + button
+- Adjust time by scrolling left/right and zooming
+- Configure color, line type, and marker type
+- Choose autoscaling or fixed scaling
+- Display or hide legends
+- Create X-Y plots comparing two variables
+
+Variables Section: Eight variable pages display up to twelve variables each. Customize through the Edit Grid option.
+
+Match IRGAs: This feature allows you to account for any difference between measurements from the sample and reference IRGAs. Protocols vary based on measurement type (leaf-level or aquatic).
+
+CO2 RESPONSE CURVES (A-Ci CURVES)
+Source: licor.com/support/LI-6800/topics/co2-response-curves.html
+
+A-Ci curves (assimilation rate versus intercellular CO2) provide insights into leaf biochemistry including CO2 compensation point, carboxylation efficiency, stomatal limitations, and carboxylation limitations.
+
+Key Measurement Strategies:
+- Light: Hold constant, typically at a non-limiting light level
+- CO2 sequencing: Start at ambient concentrations, decrease toward low levels, return to ambient, then increase to higher concentrations. This prevents enzyme deactivation at low CO2 and stomatal closure at high CO2.
+- Temperature and humidity: Maintain constant temperature; manage humidity using VPD_leaf (1.0–1.5 kPa) or RH_air (50–85%) settings
+
+CO2 concentration range: 30–1,200 µmol mol⁻¹
+
+Measurement Methods:
+1. Manual procedure: Step-by-step measurements with manual CO2 setpoint adjustments
+2. Automated program: Uses CO2_Response program for continuous data collection
+
+LIGHT RESPONSE CURVES
+Source: licor.com/support/LI-6800/topics/light-response-curves.html
+
+Light response curves measure photosynthetic rates across varying light intensities. Starting from total darkness, the first few photons absorbed by the leaf are used with greatest efficiency.
+
+Key measurements:
+1. Dark respiration rate: photosynthesis with no light present
+2. Light compensation point: quantum flux where photosynthesis balances respiration
+3. Quantum efficiency: initial slope of the assimilation curve
+4. Light saturated photosynthetic rate (Asat): maximum photosynthetic capacity
+
+Four measurement strategies:
+- Rapid Method: Decreases light in 200 µmol m⁻² s⁻¹ steps, 1–2 minutes per level; stomata remain more open
+- Slow Method: Allows 15–20 minutes per light level for stomatal equilibration, producing consistent intercellular CO2
+- Survey Approach: Uses multiple pre-equilibrated leaves at different light levels
+- Sunfleck and Shade Method: Alternates measurements between test levels and a standard reference level
+
+Setup requirements:
+- Light sources: Use 3×3 cm light sources or fluorometers for automated curves
+- Temperature: Maintain constant leaf temperature throughout measurement
+- CO2 control: Set to ambient levels by measuring CO2_r with controls disabled
+- H2O control: Use fixed relative humidity or vapor pressure deficit
+- Flow settings: Recommend 500 µmol s⁻¹ flow rate at 0.1 kPa pressure
+
+DYNAMIC ASSIMILATION TECHNIQUE (DAT)
+Source: licor.com/support/LI-6800/topics/dynamic-assimilation-technique.html
+
+The Dynamic Assimilation Technique (DAT) relaxes the requirement for steady-state conditions during gas exchange measurements.
+
+Primary advantage: Eliminates the need for chamber conditions to stabilize between CO2 steps. In traditional steady-state measurements, assimilation values spike to ±40 µmol m⁻² s⁻¹ during CO2 step changes, returning to true flux in about 45 seconds. By contrast, DAT calculations spike to less than 1.5 µmol m⁻² s⁻¹ and return in approximately 15 seconds. During CO2 ramps, steady-state calculations show ±10 µmol m⁻² s⁻¹ errors, while dynamic values generally stay within ±0.1 µmol m⁻² s⁻¹.
+
+Implementation Requirements:
+- Range Matching: Analyzers must be matched across the full concentration range to be tested
+- Dynamic Tuning: Three parameters require calibration:
+  - Δt1: reference concentration time offset
+  - Δt2: slope computation time offset
+  - αV: effective chamber volume
+- Noise Management: Minimum usable slope threshold suppresses noise during steady conditions
+
+Testing and Optimization:
+- CO2 Test: Cycles CO2 between 400 and 400+(ramp rate/2) ppm in 30-second ramps
+- H2O Test: Uses humidifier at 80% with desiccant varying between 20–30% to create 1–2 mmol/mol ramps
+
+Rapid A-Ci Curve Protocol:
+1. Instrument warm-up and thermal equilibration (~2 hours)
+2. CO2 and H2O range matching verification
+3. Flow rate determination
+4. CO2 dynamic tuning
+5. Optional H2O tuning
+6. Experiment execution using background programs
+
+Three specialized DAT programs:
+- DAT_CO2_Continuous: Single continuous ramp
+- DAT_CO2_Cont_Rep: Repetitive continuous ramps
+- DAT_CO2_Split: Ambient-to-low then ambient-to-high ramps
+
+CHLOROPHYLL FLUORESCENCE MEASUREMENTS
+Source: licor.com/support/LI-6800/topics/fluorometer-experiments.html
+
+The LI-6800 6800-01A Fluorometer uses Pulse-Amplitude Modulation (PAM) technology to measure alongside gas exchange over the same leaf area, with interchangeable apertures for 2 or 6 cm² measurements.
+
+Fv/Fm Determination
+Fv/Fm is an estimate of the maximum quantum efficiency of PSII reaction centers.
+Protocol:
+- Dark-adapt leaves for 20 minutes
+- Configure logging settings to never match gas exchange data
+- Apply rectangular flash at 8,000 µmol m⁻² s⁻¹ for 1,000 milliseconds
+
+PSII Efficiency (ΦPSII)
+Uses light-adapted leaves requiring at least 20 minutes of acclimation at the desired light level. Shade-adapted leaves typically show higher quantum yields than high-light adapted plants.
+
+Quenching Coefficients
+Measures Fv'/Fm', photochemical quenching (qP), and non-photochemical quenching (qN). The dark pulse technique using far-red light rapidly equilibrates the system to determine Fo', eliminating lengthy dark-adaptation periods.
+
+Induction Kinetics (OJIP Curves)
+Captures OJIP curves by applying an induction flash at 15,000 µmol m⁻² s⁻¹ with a logarithmic time scale for analysis. The Multiphase Flash Fluorometer achieves flash intensity up to 16,000 µmol m⁻² s⁻¹ with true OJIP point resolution.
+
+AQUATIC CHAMBER MEASUREMENTS
+Source: licor.com/support/LI-6800/topics/chamber-aquatic-irradiance-manual.html
+
+The 6800-18 Aquatic Chamber measures steady-state carbon assimilation and chlorophyll a fluorescence from algal suspensions, coral, macroalgae, seagrasses, and other aquatic organisms.
+
+Sample Preparation:
+- Spin sample in centrifuge to separate old growth media from algae
+- Decant old media
+- Re-suspend algae in fresh media
+- Add carbonic anhydrase to the mixture
+
+Measurement Protocol:
+1. Chamber Setup: Load 15 mL of prepared algae sample into chamber and install top plug
+2. IRGA Matching: Automatically calibrate gas analyzers
+3. Data Logging: Create or open log file; enter sample constants (volume, cell density, chlorophyll density)
+4. Dark Measurement: Record initial respiration data after acclimation
+5. Light Response: Incrementally increase light intensity from 0 to 1,250 µmol m⁻² s⁻¹ while monitoring CO2 and flux changes
+6. Analysis: Transfer data to Excel and input measured cell and chlorophyll densities for automatic flux recalculation
+
+SOIL CO2 FLUX MEASUREMENTS
+Source: licor.com/support/LI-6800/topics/soil-chamber-tutorial.html
+
+The 6800-09 Soil Chamber enables closed-system diffusion measurements of soil CO2 flux.
+
+Setup:
+- Select "6800-09 Soil" under startup chamber configuration
+- Configure soil temperature sensor and measurement parameters through Soil Flux settings menu
+- Enter collar offset at each measurement site
+- Specify number of repetitions
+- Select soil temperature source (Stevens HydraProbe or thermocouple)
+- Set pump speed to 90%
+
+Measurement Process:
+- Place chamber on soil collar, gently lowering it to minimize disturbance to the soil and surrounding area
+- Insert temperature probe nearby into soil
+- The LI-6800 displays both C' and estimates of Fo as a function of time
+- Cdry is plotted every 0.5 seconds and flux estimates computed for 2-second intervals
+
+Data Logging:
+- Measurements automatically captured in JSON files stored in /home/licor/logs/soil/ organized by date
+- Optionally create standard log files for summary data across multiple measurements
+- System supports subsequent analysis through SoilFluxPro software
+- Results can be reviewed on-device or transferred via USB or network connection
+
+OXYGEN EVOLUTION MEASUREMENTS
+Source: licor.com/support/LI-6800/topics/leaf-level-O2-measurements.html
+
+When combined with a Picarro G2207-i oxygen analyzer, the LI-6800 simultaneously quantifies CO2 assimilation and O2 evolution for comprehensive insights into photosynthetic light and dark reactions.
+
+Key Technical Considerations:
+- Oxygen concentrations in the atmosphere are two to three orders of magnitude larger than CO2, yet the leaf fluxes are similar in magnitude — creating measurement precision challenges
+- System requires subsample outlets from both reference and sample air streams
+- Needle valves maintain controlled airflow (~100 µmol/s) to the G2207-i
+- Critical design: minimize dead volumes, include open split to vent excess airflow, maintain identical flow rates in both lines
+
+Measurement Uncertainty depends on:
+- Leaf area: larger areas (36 cm²) reduce uncertainty substantially vs small areas (6 cm²)
+- Flux magnitude: low fluxes with small areas generate larger relative errors
+- Flow rate: lower flow rates increase concentration differences, improving precision
+- Averaging time: longer averaging (up to 5 minutes) enhances reliability
+
+Foreign Gas Dilution: Water vapor is the primary dilution concern. At atmospheric concentration of 21% O2, an increase of 5 ppm water vapor leads to ~1 µmol mol⁻¹ dilution of O2. This necessitates complete H2O scrubbing before O2 analysis.
+
+Validation: Experimental data from bean and corn confirmed theoretical 1:1 stoichiometry between CO2 fixation and O2 evolution.

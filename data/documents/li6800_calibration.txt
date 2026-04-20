@@ -1,0 +1,57 @@
+LI-6800 Portable Photosynthesis System — Calibration Guide
+Source: licor.com/support/LI-6800/topics/calibration.html
+
+OVERVIEW
+
+The LI-6800 calibration system includes options for setting IRGA zeros and spans, plus flow meter and pressure sensor adjustments. Access all calibration tools and history via Tools > Calibration.
+
+SETTING IRGA ZEROS
+
+Purpose: Zero calibration shifts the entire response curve by a fixed amount, ensuring accurate baseline measurements across all concentrations.
+
+Critical Safety Note: Never zero without tank gas or fresh chemicals. Old chemicals, even in new packaging, can expire and lose effectiveness. Always verify chemical and gas sources before proceeding.
+
+Checking Zeros (Non-Destructive)
+You can verify zeros during measurements without entering calibration mode. Bypass chamber flow to the test cell receiving flow using the Change Valves button to select Sample or Reference cell.
+- For CO2: scrub CO2 while bypassing H2O
+- For H2O: scrub water (readings drop more slowly than CO2)
+
+Zeroing with Gases
+Using certified calibration gas (CO2-free air or nitrogen):
+1. Set tank flow to at least 2 liters per minute
+2. Access Tools > Calibrations > IRGA Zeros
+3. Route flow through both Sample and Reference cells
+4. Zero H2O first (affects CO2 readings), then CO2
+
+Zeroing with Chemicals
+When calibration gases are unavailable, use zero kits with soda lime and desiccant.
+- Always zero H2O first
+- Install columns between console and head inlet
+- Zero Sample and Reference cells sequentially
+
+SETTING IRGA SPANS
+
+Carbon Dioxide Span
+Requires gas with known CO2 concentration (typically 500 µmol mol⁻¹):
+1. Connect span gas to analyzer inlet
+2. Access Tools > Calibrations > CO2 Spans
+3. Enter concentration and oxygen percentage
+4. Tap Span CO2 S and Span CO2 R when readings stabilize
+
+Water Vapor Span
+Use LI-610 Dew Point Generator for accuracy:
+1. Set target dew point 5°C below room temperature
+2. Wait 3–5 minutes for equilibration
+3. Select T610 and overpressure option
+4. Tap Span H2O S and Span H2O R
+
+Quality Standards
+Span factors should be within 0.05 of 1.0 (that is, between 0.95 and 1.05). Values outside this range suggest potential issues with:
+- Zeroing procedure
+- Gas concentration accuracy
+- Chamber sealing
+- Plumbing connections
+
+FLOW METER AND PRESSURE SENSOR ZEROS
+
+Under Tools > Calibration > Flow Meter Zeroing, tap the four buttons to zero each corresponding component.
