@@ -23,8 +23,9 @@ document.querySelectorAll('.video-card').forEach((card) => {
           <source src="${localFile}" type="video/mp4">
         </video>`;
     } else if (wistiaId) {
-      const iframe = embedContainer.querySelector('iframe');
-      iframe.src = `https://fast.wistia.net/embed/iframe/${wistiaId}?autoPlay=1&silentAutoPlay=false`;
+      embedContainer.innerHTML = `
+        <div class="wistia_embed wistia_async_${wistiaId} autoPlay=true seo=false"
+             style="width:100%;height:100%;"></div>`;
     }
   });
 });
