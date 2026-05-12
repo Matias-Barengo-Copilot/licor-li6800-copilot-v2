@@ -342,11 +342,13 @@ async function stopRecording() {
   voiceStatus?.classList.add('hidden');
 }
 
-micBtn?.addEventListener('mousedown',  (e) => { e.preventDefault(); startRecording(); });
-micBtn?.addEventListener('mouseup',    stopRecording);
-micBtn?.addEventListener('mouseleave', stopRecording);
-micBtn?.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); }, { passive: false });
-micBtn?.addEventListener('touchend',   (e) => { e.preventDefault(); stopRecording(); },  { passive: false });
+micBtn?.addEventListener('click', () => {
+  if (isRecording) stopRecording(); else startRecording();
+});
+micBtn?.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  if (isRecording) stopRecording(); else startRecording();
+}, { passive: false });
 
 // ── 24 kHz PCM audio playback (Gemini voice) ──────────────────────────────
 

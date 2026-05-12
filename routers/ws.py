@@ -120,7 +120,6 @@ async def websocket_chat(websocket: WebSocket, session_id: str):
 # ── Upstream: browser → Live API ───────────────────────────────────────────
 
 async def _upstream(websocket: WebSocket, live: LiveSession) -> None:
-    audio_buffer = bytearray()
     is_recording = False
 
     while True:
@@ -131,11 +130,9 @@ async def _upstream(websocket: WebSocket, live: LiveSession) -> None:
             raise WebSocketDisconnect(code=msg.get("code", 1000))
 
         if "bytes" in msg:
-            # Binary frame: raw PCM chunk while push-to-talk is active
+            # Binary frame: raw 16 kHz PCM chunk — stream directly to Gemini VAD
             if is_recording:
-                audio_buffer.extend(msg["bytes"])
-                if len(audio_buffer) > _MAX_AUDIO_BYTES:
-                    audio_buffer = bytearray(audio_buffer[-_MAX_AUDIO_BYTES:])
+                await live.send_audio_chunk(bytes(msg["bytes"]))
 
         elif "text" in msg:
             data = json.loads(msg["text"])
@@ -152,15 +149,11 @@ async def _upstream(websocket: WebSocket, live: LiveSession) -> None:
                         pass
 
             elif kind == "audio_start":
-                audio_buffer.clear()
                 is_recording = True
 
             elif kind == "audio_end":
                 is_recording = False
-                captured = bytes(audio_buffer)
-                audio_buffer.clear()
-                if captured:
-                    await live.send_audio_pcm(captured)
+                await live.send_audio_stream_end()
 
             elif kind == "video_frame":
                 try:

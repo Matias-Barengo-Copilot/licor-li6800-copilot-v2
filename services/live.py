@@ -110,17 +110,15 @@ class LiveSession:
             turn_complete=True,
         )
 
-    async def send_audio_pcm(self, pcm_bytes: bytes) -> None:
-        """Transcribe PTT audio via Deepgram, emit input_transcription, then send as text."""
-        try:
-            transcript = self._voice.transcribe(pcm_bytes, mime_type="audio/pcm")
-        except Exception as exc:
-            logger.warning("PTT transcription failed: %s", exc)
-            await self._queue.put(LiveEvent(type="error", text="Could not transcribe audio — please try again."))
-            return
-        if transcript.strip():
-            await self._queue.put(LiveEvent(type="input_transcription", text=transcript))
-            await self.send_text(transcript)
+    async def send_audio_chunk(self, pcm_bytes: bytes) -> None:
+        """Stream one raw PCM chunk to Gemini for native VAD processing."""
+        await self._session.send_realtime_input(
+            audio=types.Blob(data=pcm_bytes, mime_type="audio/pcm;rate=16000"),
+        )
+
+    async def send_audio_stream_end(self) -> None:
+        """Signal that the audio stream has ended (user stopped mic)."""
+        await self._session.send_realtime_input(audio_stream_end=True)
 
     async def send_video_frame(self, jpeg_bytes: bytes) -> None:
         """Send one JPEG frame as realtime visual context (1 fps stream)."""
@@ -161,6 +159,13 @@ class LiveSession:
                             elif getattr(part, "text", None):
                                 # TEXT modality token (if response_modalities includes TEXT)
                                 await self._queue.put(LiveEvent(type="output_transcription", text=part.text))
+
+                    # Transcription of the user's spoken input (native VAD)
+                    it = getattr(sc, "input_transcription", None)
+                    if it:
+                        t = getattr(it, "text", "") or ""
+                        if t:
+                            await self._queue.put(LiveEvent(type="input_transcription", text=t))
 
                     # Transcription of Gemini's audio output
                     ot = getattr(sc, "output_transcription", None)
