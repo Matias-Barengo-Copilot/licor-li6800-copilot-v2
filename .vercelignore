@@ -1,0 +1,10 @@
+# Next.js frontend — separate project, not part of the LI-6800 Copilot deploy
+frontend/
+
+# Dev tooling
+__pycache__/
+**/__pycache__/
+*.pyc
+.env
+.env.local
+start.sh

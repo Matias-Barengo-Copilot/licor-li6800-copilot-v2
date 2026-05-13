@@ -10,6 +10,8 @@ RAGService — ChromaDB retrieval with relevance filtering.
 from __future__ import annotations
 
 import os
+import shutil
+from pathlib import Path
 
 import chromadb
 from google import genai
@@ -117,9 +119,22 @@ class RAGService:
         return chunks[:top_k]
 
 
+_CHROMA_SOURCE = (Path(__file__).parent.parent / "data" / "chroma").resolve()
+
+
+def _chroma_path() -> str:
+    # Vercel filesystem is read-only outside /tmp — copy data on cold start
+    if os.environ.get("VERCEL"):
+        dest = Path("/tmp/licor-chroma")
+        if not dest.exists():
+            shutil.copytree(str(_CHROMA_SOURCE), str(dest))
+        return str(dest)
+    return str(_CHROMA_SOURCE)
+
+
 def build_rag_service() -> tuple[RAGService, EmbeddingService]:
     embedding_service = EmbeddingService()
-    chroma_client = chromadb.PersistentClient(path="data/chroma")
+    chroma_client = chromadb.PersistentClient(path=_chroma_path())
     collection = chroma_client.get_or_create_collection(
         name=COLLECTION_NAME,
         metadata={"hnsw:space": "cosine"},

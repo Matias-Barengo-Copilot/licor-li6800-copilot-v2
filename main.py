@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -14,9 +15,11 @@ from fastapi.staticfiles import StaticFiles
 
 from routers import chat, pages, ws
 
+_ROOT = Path(__file__).parent
+
 app = FastAPI(title="LI-COR LI-6800 — Post-Purchase Experience")
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=str(_ROOT / "static")), name="static")
 
 app.include_router(pages.router)
 app.include_router(chat.router)

@@ -18,6 +18,8 @@ venv/
 .claude/
 .cursor/
 
-# Node / frontend build
-frontend/node_modules/
-frontend/.next/
+# Program IQ Next.js app — separate project, not part of this deploy
+frontend/
+
+# Vercel project config
+.vercel/
